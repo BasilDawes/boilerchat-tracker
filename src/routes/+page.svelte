@@ -13,9 +13,13 @@
     ResidentCard,
     settingsStore,
     exportSettingsAsJson,
-    mockStats,
     mockResidents,
     mockArchivedResidents,
+    calculateTrackerStats,
+    isResidentCompleted,
+    parseResidentFilename,
+    fileToAvatarDataUrl,
+    residentMatchesQuery,
     getCurrentDomainBullets,
     type Resident,
     type SortOption,
@@ -23,48 +27,115 @@
   } from "$lib"
 
   const RESIDENTS_STORAGE_KEY = "boilerchat_residents"
+  const YEARS_STORAGE_KEY = "boilerchat_years"
+  const CURRENT_YEAR_STORAGE_KEY = "boilerchat_current_year"
+  const ATTEMPTS_STORAGE_KEY = "boilerchat_attempts"
 
-  function loadSavedResidents(): Resident[] {
-    if (!browser) return mockResidents
+  function getResidentsStorageKey(year: string): string {
+    return `boilerchat_residents_${year}`
+  }
+
+  function loadSavedYears(): string[] {
+    if (!browser) return ["26-27", "25-26"]
     try {
-      const stored = localStorage.getItem(RESIDENTS_STORAGE_KEY)
+      const stored = localStorage.getItem(YEARS_STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed)) {
-          // Backward compatibility: If stored data was previously RoomGroup[], flatten it
-          if (parsed.length > 0 && "residents" in parsed[0] && Array.isArray(parsed[0].residents)) {
-            return parsed.flatMap((g: RoomGroup) => g.residents)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch (e) {
+      console.error("Failed to load years from localStorage:", e)
+    }
+    return ["26-27", "25-26"]
+  }
+
+  function loadCurrentYear(availableYears: string[]): string {
+    if (!browser) return "26-27"
+    try {
+      const stored = localStorage.getItem(CURRENT_YEAR_STORAGE_KEY)
+      if (stored && availableYears.includes(stored)) return stored
+    } catch (e) {
+      console.error("Failed to load current year:", e)
+    }
+    return availableYears[0] ?? "26-27"
+  }
+
+  function loadSavedResidentsForYear(year: string): Resident[] {
+    if (!browser) return year === "26-27" ? mockResidents : []
+    try {
+      const stored = localStorage.getItem(getResidentsStorageKey(year))
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) return parsed as Resident[]
+      }
+      // Backward compatibility for 26-27 default year
+      if (year === "26-27") {
+        const legacy = localStorage.getItem(RESIDENTS_STORAGE_KEY)
+        if (legacy) {
+          const parsed = JSON.parse(legacy)
+          if (Array.isArray(parsed)) {
+            if (
+              parsed.length > 0 &&
+              "residents" in parsed[0] &&
+              Array.isArray(parsed[0].residents)
+            ) {
+              return parsed.flatMap((g: RoomGroup) => g.residents)
+            }
+            return parsed as Resident[]
           }
-          return parsed as Resident[]
         }
+        return mockResidents
       }
     } catch (e) {
       console.error("Failed to load residents from localStorage:", e)
     }
-    return mockResidents
+    return year === "26-27" ? mockResidents : []
   }
 
-  // UI state separated from business logic
-  let selectedYear = $state("26-27")
+  const initialYears = loadSavedYears()
+  const initialCurrentYear = loadCurrentYear(initialYears)
+
+  // State
+  let academicYears = $state<string[]>(initialYears)
+  let selectedYear = $state<string>(initialCurrentYear)
+  let residents = $state<Resident[]>(loadSavedResidentsForYear(initialCurrentYear))
   let searchQuery = $state("")
   let selectedSort = $state<SortOption>("room")
+  let hideCompleted = $state(false)
   let selectedResident = $state<Resident | null>(null)
   let isModalOpen = $state(false)
   let isSettingsOpen = $state(false)
-  let residents = $state<Resident[]>(loadSavedResidents())
+
+  // Tracker stats computed from unarchived residents
+  let stats = $derived(
+    calculateTrackerStats(residents, settingsStore.current.domains, settingsStore.current.bullets),
+  )
 
   let activeResidents = $derived(residents.filter((r) => !r.isArchived))
-  let archivedResidents = $derived([
-    ...mockArchivedResidents.filter((m) => !residents.some((r) => r.id === m.id)),
+  let baseArchivedResidents = $derived([
+    ...(selectedYear === "26-27"
+      ? mockArchivedResidents.filter((m) => !residents.some((r) => r.id === m.id))
+      : []),
     ...residents.filter((r) => r.isArchived),
   ])
 
-  let filteredResidents = $derived.by(() => {
+  let filteredArchivedResidents = $derived.by(() => {
     const query = searchQuery.trim().toLowerCase()
-    if (!query) return activeResidents
-    return activeResidents.filter(
-      (r) => r.name.toLowerCase().includes(query) || r.roomNumber.toLowerCase().includes(query),
-    )
+    if (!query) return baseArchivedResidents
+    return baseArchivedResidents.filter((r) => residentMatchesQuery(r, query))
+  })
+
+  let filteredResidents = $derived.by(() => {
+    let list = activeResidents
+    if (hideCompleted) {
+      list = list.filter(
+        (r) =>
+          !isResidentCompleted(r, settingsStore.current.domains, settingsStore.current.bullets),
+      )
+    }
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return list
+    return list.filter((r) => residentMatchesQuery(r, query))
   })
 
   // Room view groups: used only when selectedSort === 'room'
@@ -122,13 +193,45 @@
     return list
   })
 
-  function persistResidents(data: Resident[]) {
+  function persistResidents(data: Resident[], year: string = selectedYear) {
     if (!browser) return
     try {
-      localStorage.setItem(RESIDENTS_STORAGE_KEY, JSON.stringify(data))
+      localStorage.setItem(getResidentsStorageKey(year), JSON.stringify(data))
+      if (year === "26-27") {
+        localStorage.setItem(RESIDENTS_STORAGE_KEY, JSON.stringify(data))
+      }
     } catch (e) {
       console.error("Failed to save residents to localStorage:", e)
     }
+  }
+
+  function switchYear(newYear: string) {
+    persistResidents(residents, selectedYear)
+    selectedYear = newYear
+    residents = loadSavedResidentsForYear(newYear)
+    if (browser) {
+      localStorage.setItem(CURRENT_YEAR_STORAGE_KEY, newYear)
+    }
+  }
+
+  function handleSelectYear(yr: string) {
+    if (yr === "new year") {
+      const title = window.prompt("Enter title for new year (e.g. 27-28):")
+      if (title && title.trim()) {
+        const trimmed = title.trim()
+        if (!academicYears.includes(trimmed)) {
+          academicYears = [trimmed, ...academicYears]
+          if (browser) {
+            localStorage.setItem(YEARS_STORAGE_KEY, JSON.stringify(academicYears))
+          }
+        }
+        switchYear(trimmed)
+      } else {
+        selectedYear = selectedYear
+      }
+      return
+    }
+    switchYear(yr)
   }
 
   function handleSelectResident(resident: Resident) {
@@ -142,12 +245,17 @@
 
   function handleSaveResident(updated: Resident) {
     selectedResident = updated
-    residents = residents.map((r) => (r.id === updated.id ? updated : r))
+    const index = residents.findIndex((r) => r.id === updated.id)
+    if (index >= 0) {
+      residents = residents.map((r) => (r.id === updated.id ? updated : r))
+    } else {
+      residents = [...residents, updated]
+    }
     persistResidents(residents)
   }
 
   function handleArchiveResident(resident: Resident) {
-    const updated = { ...resident, isArchived: true }
+    const updated: Resident = { ...resident, isArchived: !resident.isArchived }
     handleSaveResident(updated)
     handleCloseModal()
   }
@@ -175,15 +283,88 @@
     handleSaveResident(updated)
   }
 
+  function handleLogAttempt() {
+    const note = window.prompt("Log attempt note:")
+    if (note === null) return
+    const trimmed = note.trim()
+    if (!trimmed) return
+
+    try {
+      const existing = localStorage.getItem(ATTEMPTS_STORAGE_KEY)
+      const list = existing ? JSON.parse(existing) : []
+      list.unshift({
+        id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        note: trimmed,
+        year: selectedYear,
+        timestamp: new Date().toISOString(),
+      })
+      localStorage.setItem(ATTEMPTS_STORAGE_KEY, JSON.stringify(list))
+    } catch (e) {
+      console.error("Failed to save attempt to localStorage:", e)
+    }
+  }
+
+  async function handleAddResident() {
+    const input = document.createElement("input")
+    input.type = "file"
+    input.setAttribute("webkitdirectory", "")
+    input.setAttribute("directory", "")
+    input.multiple = true
+    input.accept = "image/*"
+
+    input.onchange = async (e) => {
+      const files = (e.target as HTMLInputElement).files
+      if (!files || files.length === 0) return
+
+      const imageFiles = Array.from(files).filter(
+        (file) =>
+          file.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|avif|bmp)$/i.test(file.name),
+      )
+      if (imageFiles.length === 0) return
+
+      const imported: Resident[] = []
+      for (const file of imageFiles) {
+        const { roomNumber, name } = parseResidentFilename(file.name)
+        const avatarUrl = await fileToAvatarDataUrl(file)
+        imported.push({
+          id: `res-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name,
+          roomNumber,
+          avatarUrl,
+          domains: [],
+          isArchived: false,
+        })
+      }
+
+      // If currently only mock residents, replace; else append
+      const isOnlyMock =
+        residents.length > 0 &&
+        residents.every((r) => ["p1", "p2", "p3", "p4", "p5"].includes(r.id))
+
+      residents = isOnlyMock ? imported : [...residents, ...imported]
+      persistResidents(residents)
+    }
+
+    input.click()
+  }
+
   function handleDeleteData() {
     settingsStore.reset()
     if (browser) {
       try {
         localStorage.removeItem(RESIDENTS_STORAGE_KEY)
+        localStorage.removeItem(YEARS_STORAGE_KEY)
+        localStorage.removeItem(CURRENT_YEAR_STORAGE_KEY)
+        localStorage.removeItem(ATTEMPTS_STORAGE_KEY)
+        for (const yr of academicYears) {
+          localStorage.removeItem(getResidentsStorageKey(yr))
+        }
       } catch (e) {
         console.error("Failed to clear residents from localStorage:", e)
       }
     }
+    academicYears = ["26-27", "25-26"]
+    selectedYear = "26-27"
     residents = mockResidents
   }
 </script>
@@ -197,28 +378,31 @@
   <div class="relative flex min-h-screen w-full max-w-md flex-col overflow-hidden">
     <!-- Top Header -->
     <Header
+      {academicYears}
       {selectedYear}
-      dueText={mockStats.dueText}
-      onSelectYear={(yr) => (selectedYear = yr)}
-      onAddResident={() => {}}
+      dueText={stats.dueText}
+      onSelectYear={handleSelectYear}
+      onAddResident={handleAddResident}
       onOpenSettings={() => (isSettingsOpen = true)}
     />
 
     <!-- Progress Metrics -->
     <ProgressBar
-      percent={mockStats.percent}
-      doneCount={mockStats.doneCount}
-      ratePerWeek={mockStats.ratePerWeek}
-      remainingCount={mockStats.remainingCount}
-      totalCount={mockStats.totalCount}
+      percent={stats.percent}
+      doneCount={stats.doneCount}
+      ratePerWeek={stats.ratePerWeek}
+      remainingCount={stats.remainingCount}
+      totalCount={stats.totalCount}
     />
 
     <!-- Search & Sort Controls -->
     <ControlsBar
       {searchQuery}
       {selectedSort}
+      {hideCompleted}
       onSearchChange={(q) => (searchQuery = q)}
       onSortChange={(s) => (selectedSort = s)}
+      onHideCompletedChange={(h) => (hideCompleted = h)}
     />
 
     <!-- Scrollable Room & Resident Content Area -->
@@ -256,10 +440,13 @@
       {/if}
 
       <!-- Archived Residents Section -->
-      <ArchivedSection {archivedResidents} onSelectResident={handleSelectResident} />
+      <ArchivedSection
+        archivedResidents={filteredArchivedResidents}
+        onSelectResident={handleSelectResident}
+      />
 
       <!-- Log Attempt Button (at bottom of scroll) -->
-      <LogAttemptButton onClick={() => {}} />
+      <LogAttemptButton onClick={handleLogAttempt} />
     </div>
 
     <!-- Floating Actions (Record, Upload) -->

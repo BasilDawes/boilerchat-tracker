@@ -16,6 +16,14 @@
     onAddResident,
     onOpenSettings,
   }: Props = $props()
+
+  let selectEl = $state<HTMLSelectElement | null>(null)
+
+  $effect(() => {
+    if (selectEl && selectEl.value !== selectedYear) {
+      selectEl.value = selectedYear
+    }
+  })
 </script>
 
 <header class="flex items-center justify-between gap-2 px-4 py-3">
@@ -23,6 +31,7 @@
   <div class="relative">
     <label for="year-selector" class="sr-only">Academic Year</label>
     <select
+      bind:this={selectEl}
       id="year-selector"
       value={selectedYear}
       onchange={(e) => onSelectYear?.((e.target as HTMLSelectElement).value)}
@@ -31,6 +40,7 @@
       {#each academicYears as year (year)}
         <option value={year}>{year}</option>
       {/each}
+      <option value="new year">new year</option>
     </select>
     <div
       class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-neutral-500"

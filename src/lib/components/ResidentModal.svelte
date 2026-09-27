@@ -188,18 +188,31 @@
         <button
           type="button"
           onclick={() => resident && onArchive?.(resident)}
-          aria-label="Archive resident"
+          aria-label={resident.isArchived ? "Unarchive resident" : "Archive resident"}
+          title={resident.isArchived ? "Unarchive resident" : "Archive resident"}
           class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-neutral-100 hover:text-neutral-700"
         >
-          <!-- Archive icon -->
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-            />
-          </svg>
+          {#if resident.isArchived}
+            <!-- Unarchive icon -->
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-7-2l3-3m0 0l3 3m-3-3v8"
+              />
+            </svg>
+          {:else}
+            <!-- Archive icon -->
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+              />
+            </svg>
+          {/if}
         </button>
 
         <button
