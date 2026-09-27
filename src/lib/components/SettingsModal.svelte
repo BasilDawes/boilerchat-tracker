@@ -156,8 +156,8 @@
       <h3 class="text-sm font-semibold text-neutral-900">Api keys</h3>
 
       <div>
-        <label for="assembly-ai-input" class="mb-1 block text-xs font-medium text-neutral-600">
-          Assembly AI
+        <label for="assembly-ai-input" class="mb-1 block text-xs font-medium text-blue-600 underline">
+          <a href="https://assembly.ai" target="_blank">Assembly AI</a>
         </label>
         <input
           id="assembly-ai-input"
@@ -171,8 +171,8 @@
       </div>
 
       <div>
-        <label for="open-router-input" class="mb-1 block text-xs font-medium text-neutral-600">
-          OpenRouter
+        <label for="open-router-input" class="mb-1 block text-xs font-medium text-blue-600 underline">
+          <a href="https://openrouter.ai" target="_blank">OpenRouter</a>
         </label>
         <input
           id="open-router-input"
