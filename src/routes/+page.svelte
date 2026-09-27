@@ -26,11 +26,15 @@
     getCurrentDomain,
     getTodayDateString,
     runVoiceExtractionPipeline,
+    getAttemptsForDomain,
+    formatAttempts,
+    copyToClipboard,
     type Resident,
     type SortOption,
     type RoomGroup,
     type ExtractedNoteItem,
     type ProcessingState,
+    type Attempt,
   } from "$lib"
 
   const RESIDENTS_STORAGE_KEY = "boilerchat_residents"
@@ -295,15 +299,37 @@
     try {
       const existing = localStorage.getItem(ATTEMPTS_STORAGE_KEY)
       const list = existing ? JSON.parse(existing) : []
+      const currentDomain = getCurrentDomain(settingsStore.current.domains)
       list.unshift({
         id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         note: trimmed,
         year: selectedYear,
+        domain: currentDomain?.id ?? "d1",
         timestamp: new Date().toISOString(),
       })
       localStorage.setItem(ATTEMPTS_STORAGE_KEY, JSON.stringify(list))
     } catch (e) {
       console.error("Failed to save attempt to localStorage:", e)
+    }
+  }
+
+  async function handleCopyAttempts() {
+    if (!browser) return
+    try {
+      const existing = localStorage.getItem(ATTEMPTS_STORAGE_KEY)
+      const list: Attempt[] = existing ? JSON.parse(existing) : []
+      const currentDomain = getCurrentDomain(settingsStore.current.domains)
+      const targetDomainId = currentDomain?.id ?? "d1"
+      const domainAttempts = getAttemptsForDomain(
+        list,
+        targetDomainId,
+        settingsStore.current.domains,
+        selectedYear,
+      )
+      const formatted = formatAttempts(domainAttempts)
+      await copyToClipboard(formatted)
+    } catch (e) {
+      console.error("Failed to copy attempts to clipboard:", e)
     }
   }
 
@@ -562,8 +588,8 @@
         onSelectResident={handleSelectResident}
       />
 
-      <!-- Log Attempt Button (at bottom of scroll) -->
-      <LogAttemptButton onClick={handleLogAttempt} />
+      <!-- Log Attempt & Copy Attempts Buttons (at bottom of scroll) -->
+      <LogAttemptButton onClick={handleLogAttempt} onCopyAttempts={handleCopyAttempts} />
     </div>
 
     <!-- Floating Actions (Record, Upload) -->

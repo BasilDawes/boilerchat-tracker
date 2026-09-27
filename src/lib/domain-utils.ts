@@ -1,5 +1,6 @@
 import {
   DEFAULT_DOMAIN_DEADLINES,
+  type Attempt,
   type DomainDeadlines,
   type DomainRecord,
   type DomainStatus,
@@ -327,5 +328,115 @@ export function residentMatchesQuery(resident: Resident, query: string): boolean
   ) {
     return true
   }
+  return false
+}
+
+/**
+ * Returns a date string formatted as YYYY-MM-DD in local time from a timestamp.
+ */
+export function getLocalDateString(timestamp?: string | number | Date | null): string {
+  if (!timestamp) return ""
+  const d = new Date(timestamp)
+  if (isNaN(d.getTime())) return ""
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+/**
+ * Returns which domain ID ('d1', 'd2', 'd3', 'd4') a date string belongs to based on deadlines.
+ */
+export function getDomainIdForDate(dateStr: string, deadlines?: DomainDeadlines): string {
+  if (!dateStr) return "d1"
+  const effective = getEffectiveDeadlines(deadlines)
+
+  if (!effective.d1 || dateStr <= effective.d1) {
+    return "d1"
+  }
+  if (!effective.d2 || dateStr <= effective.d2) {
+    return "d2"
+  }
+  if (!effective.d3 || dateStr <= effective.d3) {
+    return "d3"
+  }
+  return "d4"
+}
+
+/**
+ * Formats a timestamp into human-readable short month, date format (e.g. 'Sep 27').
+ */
+export function formatAttemptDate(
+  timestamp?: string | number | Date | null,
+  locale: string = "en-US",
+): string {
+  if (!timestamp) return ""
+  const d = new Date(timestamp)
+  if (isNaN(d.getTime())) return String(timestamp)
+  return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(d)
+}
+
+/**
+ * Filters and sorts attempts for a given domain and optional academic year.
+ */
+export function getAttemptsForDomain(
+  attempts: Attempt[],
+  domainId: string,
+  deadlines?: DomainDeadlines,
+  year?: string,
+): Attempt[] {
+  return attempts
+    .filter((att) => {
+      if (year && att.year && att.year !== year) return false
+      if (att.domain) return att.domain === domainId
+      const attDate = getLocalDateString(att.timestamp)
+      return getDomainIdForDate(attDate, deadlines) === domainId
+    })
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+}
+
+/**
+ * Formats attempts as "<human readable short month, date>: <message>\n<more>".
+ */
+export function formatAttempts(attempts: Attempt[], locale: string = "en-US"): string {
+  return attempts
+    .map((att) => {
+      const dateStr = formatAttemptDate(att.timestamp, locale)
+      const message = att.note || (att as any).message || ""
+      return `${dateStr}: ${message}`
+    })
+    .join("\n")
+}
+
+/**
+ * Copies text to the user's clipboard using the Clipboard API with fallback.
+ */
+export async function copyToClipboard(text: string): Promise<boolean> {
+  if (typeof navigator !== "undefined" && navigator?.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch (e) {
+      console.warn("navigator.clipboard.writeText failed, using fallback:", e)
+    }
+  }
+
+  if (typeof document !== "undefined") {
+    try {
+      const textarea = document.createElement("textarea")
+      textarea.value = text
+      textarea.style.position = "fixed"
+      textarea.style.opacity = "0"
+      document.body.appendChild(textarea)
+      textarea.select()
+      const successful = document.execCommand("copy")
+      document.body.removeChild(textarea)
+      return successful
+    } catch (err) {
+      console.error("Failed to copy to clipboard:", err)
+      return false
+    }
+  }
+
   return false
 }

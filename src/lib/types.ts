@@ -16,6 +16,14 @@ export interface Resident {
   isArchived?: boolean
 }
 
+export interface Attempt {
+  id: string
+  note: string
+  year?: string
+  domain?: string
+  timestamp: string
+}
+
 export interface RoomGroup {
   roomNumber: string
   residents: Resident[]
