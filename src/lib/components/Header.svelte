@@ -37,6 +37,9 @@
       onchange={(e) => onSelectYear?.((e.target as HTMLSelectElement).value)}
       class="appearance-none rounded-md border border-neutral-300 bg-white px-3 py-1.5 pr-7 text-sm font-semibold text-neutral-800 shadow-xs focus:border-neutral-500"
     >
+      {#if !selectedYear || !academicYears.includes(selectedYear)}
+        <option value="" disabled selected>select year</option>
+      {/if}
       {#each academicYears as year (year)}
         <option value={year}>{year}</option>
       {/each}
@@ -52,9 +55,11 @@
   </div>
 
   <!-- Due status label -->
-  <div class="rounded-md bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
-    {dueText}
-  </div>
+  {#if dueText}
+    <div class="rounded-md bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
+      {dueText}
+    </div>
+  {/if}
 
   <!-- Right side actions: Add Resident & Settings -->
   <div class="flex items-center gap-1.5">

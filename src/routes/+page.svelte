@@ -13,8 +13,6 @@
     ResidentCard,
     settingsStore,
     exportSettingsAsJson,
-    mockResidents,
-    mockArchivedResidents,
     calculateTrackerStats,
     isResidentCompleted,
     parseResidentFilename,
@@ -36,7 +34,7 @@
   }
 
   function loadSavedYears(): string[] {
-    if (!browser) return ["26-27", "25-26"]
+    if (!browser) return []
     try {
       const stored = localStorage.getItem(YEARS_STORAGE_KEY)
       if (stored) {
@@ -46,50 +44,43 @@
     } catch (e) {
       console.error("Failed to load years from localStorage:", e)
     }
-    return ["26-27", "25-26"]
+    return []
   }
 
   function loadCurrentYear(availableYears: string[]): string {
-    if (!browser) return "26-27"
+    if (!browser) return ""
     try {
       const stored = localStorage.getItem(CURRENT_YEAR_STORAGE_KEY)
       if (stored && availableYears.includes(stored)) return stored
     } catch (e) {
       console.error("Failed to load current year:", e)
     }
-    return availableYears[0] ?? "26-27"
+    return availableYears[0] ?? ""
   }
 
   function loadSavedResidentsForYear(year: string): Resident[] {
-    if (!browser) return year === "26-27" ? mockResidents : []
+    if (!browser || !year) return []
     try {
       const stored = localStorage.getItem(getResidentsStorageKey(year))
       if (stored) {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed)) return parsed as Resident[]
       }
-      // Backward compatibility for 26-27 default year
-      if (year === "26-27") {
-        const legacy = localStorage.getItem(RESIDENTS_STORAGE_KEY)
-        if (legacy) {
-          const parsed = JSON.parse(legacy)
-          if (Array.isArray(parsed)) {
-            if (
-              parsed.length > 0 &&
-              "residents" in parsed[0] &&
-              Array.isArray(parsed[0].residents)
-            ) {
-              return parsed.flatMap((g: RoomGroup) => g.residents)
-            }
-            return parsed as Resident[]
+      // Backward compatibility for legacy key
+      const legacy = localStorage.getItem(RESIDENTS_STORAGE_KEY)
+      if (legacy) {
+        const parsed = JSON.parse(legacy)
+        if (Array.isArray(parsed)) {
+          if (parsed.length > 0 && "residents" in parsed[0] && Array.isArray(parsed[0].residents)) {
+            return parsed.flatMap((g: RoomGroup) => g.residents)
           }
+          return parsed as Resident[]
         }
-        return mockResidents
       }
     } catch (e) {
       console.error("Failed to load residents from localStorage:", e)
     }
-    return year === "26-27" ? mockResidents : []
+    return []
   }
 
   const initialYears = loadSavedYears()
@@ -112,12 +103,7 @@
   )
 
   let activeResidents = $derived(residents.filter((r) => !r.isArchived))
-  let baseArchivedResidents = $derived([
-    ...(selectedYear === "26-27"
-      ? mockArchivedResidents.filter((m) => !residents.some((r) => r.id === m.id))
-      : []),
-    ...residents.filter((r) => r.isArchived),
-  ])
+  let baseArchivedResidents = $derived(residents.filter((r) => r.isArchived))
 
   let filteredArchivedResidents = $derived.by(() => {
     const query = searchQuery.trim().toLowerCase()
@@ -194,12 +180,9 @@
   })
 
   function persistResidents(data: Resident[], year: string = selectedYear) {
-    if (!browser) return
+    if (!browser || !year) return
     try {
       localStorage.setItem(getResidentsStorageKey(year), JSON.stringify(data))
-      if (year === "26-27") {
-        localStorage.setItem(RESIDENTS_STORAGE_KEY, JSON.stringify(data))
-      }
     } catch (e) {
       console.error("Failed to save residents to localStorage:", e)
     }
@@ -336,12 +319,7 @@
         })
       }
 
-      // If currently only mock residents, replace; else append
-      const isOnlyMock =
-        residents.length > 0 &&
-        residents.every((r) => ["p1", "p2", "p3", "p4", "p5"].includes(r.id))
-
-      residents = isOnlyMock ? imported : [...residents, ...imported]
+      residents = [...residents, ...imported]
       persistResidents(residents)
     }
 
@@ -363,9 +341,9 @@
         console.error("Failed to clear residents from localStorage:", e)
       }
     }
-    academicYears = ["26-27", "25-26"]
-    selectedYear = "26-27"
-    residents = mockResidents
+    academicYears = []
+    selectedYear = ""
+    residents = []
   }
 </script>
 

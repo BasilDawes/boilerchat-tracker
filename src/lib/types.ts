@@ -40,10 +40,10 @@ export interface DomainDeadlines {
 }
 
 export const DEFAULT_DOMAIN_DEADLINES: Required<DomainDeadlines> = {
-  d1: "9999-01-01",
-  d2: "9999-01-01",
-  d3: "9999-01-01",
-  d4: "9999-01-01",
+  d1: "",
+  d2: "",
+  d3: "",
+  d4: "",
 }
 
 export interface AppSettings {

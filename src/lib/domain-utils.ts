@@ -77,14 +77,14 @@ export function getEnumeratedDomains(
     if (i > 0) {
       const prevConfig = DOMAIN_CONFIGS[i - 1]
       const prevDeadline = effective[prevConfig.key]
-      if (currentDate <= prevDeadline) {
-        // It is before (or on) the deadline of the previous domain, so stop enumerating further domains
+      if (!prevDeadline || currentDate <= prevDeadline) {
+        // It is before (or on) the deadline of the previous domain, or previous deadline is not set, so stop enumerating further domains
         break
       }
     }
 
     // Determine status: compare deadline to current day
-    const isPast = currentDate > deadline
+    const isPast = Boolean(deadline && currentDate > deadline)
     const status: DomainStatus = isPast ? "past" : "current"
 
     // Find resident's domain record if any
@@ -112,7 +112,7 @@ export function getCurrentDomain(
   currentDate: string = getTodayDateString(),
 ): DomainItem | undefined {
   const enumerated = getEnumeratedDomains(deadlines, residentDomains, currentDate)
-  return enumerated.find((d) => d.status === "current")
+  return enumerated.find((d) => d.status === "current") ?? enumerated[enumerated.length - 1]
 }
 
 /**
@@ -185,10 +185,14 @@ export function calculateTrackerStats(
   const remainingCount = Math.max(0, totalCount - doneCount)
 
   const currentDomain = getCurrentDomain(deadlines, undefined, currentDate)
-  let dueText = "no deadline"
+  let dueText = ""
   let ratePerWeek = 0
 
-  if (currentDomain?.deadline && currentDomain.deadline !== "9999-01-01") {
+  if (
+    currentDomain?.deadline &&
+    currentDomain.deadline.trim() !== "" &&
+    currentDomain.deadline !== "9999-01-01"
+  ) {
     const [cYear, cMonth, cDay] = currentDate.split("-").map(Number)
     const [dYear, dMonth, dDay] = currentDomain.deadline.split("-").map(Number)
     const currentMs = new Date(cYear, cMonth - 1, cDay).getTime()
