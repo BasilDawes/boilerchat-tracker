@@ -1,5 +1,6 @@
 export * from "./types"
 export * from "./settings.svelte"
+export * from "./backup.svelte"
 export * from "./mock-data"
 export * from "./domain-utils"
 export * from "./ai/assemblyai"

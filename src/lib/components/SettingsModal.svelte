@@ -1,7 +1,8 @@
 <script lang="ts">
   import { untrack } from "svelte"
   import type { AppSettings } from "$lib/types"
-  import { defaultSettings } from "$lib/settings.svelte"
+  import { defaultSettings, settingsStore } from "$lib/settings.svelte"
+  import { backupManager } from "$lib/backup.svelte"
 
   interface Props {
     isOpen: boolean
@@ -9,10 +10,21 @@
     onClose?: () => void
     onChange?: (settings: AppSettings) => void
     onDownloadData?: () => void
+    onExportData?: () => void
+    onImportData?: () => void
     onDeleteData?: () => void
   }
 
-  let { isOpen, settings, onClose, onChange, onDownloadData, onDeleteData }: Props = $props()
+  let {
+    isOpen,
+    settings,
+    onClose,
+    onChange,
+    onDownloadData,
+    onExportData,
+    onImportData,
+    onDeleteData,
+  }: Props = $props()
 
   function copySettings(source?: AppSettings) {
     return {
@@ -44,6 +56,44 @@
         ...localSettings.domains,
       },
     })
+  }
+
+  async function handleToggleAutoBackup(e: Event) {
+    const target = e.target as HTMLInputElement
+    if (target.checked) {
+      const ok = await backupManager.enableAutoBackup()
+      if (!ok) {
+        target.checked = false
+      }
+    } else {
+      await backupManager.disableAutoBackup()
+    }
+    localSettings = copySettings(settingsStore.current)
+    notifyChange()
+  }
+
+  async function handleManualExport() {
+    if (onExportData) {
+      onExportData()
+    } else if (onDownloadData) {
+      onDownloadData()
+    } else {
+      await backupManager.manualExport()
+    }
+  }
+
+  async function handleImport() {
+    const confirmed = window.confirm(
+      "Importing will erase all data. Are you sure you want to continue?",
+    )
+    if (!confirmed) return
+
+    const ok = await backupManager.importFromBackup({ skipConfirm: true })
+    if (ok) {
+      onImportData?.()
+      localSettings = copySettings(settingsStore.current)
+      alert("Data imported successfully!")
+    }
   }
 
   function handleDelete() {
@@ -250,13 +300,65 @@
     <!-- Data Section -->
     <section class="space-y-3">
       <h3 class="text-sm font-semibold text-neutral-900">Data</h3>
-      <div class="flex items-center gap-2">
+
+      <!-- Automatic Backups Checkbox -->
+      <div class="rounded-lg border border-neutral-200 bg-neutral-50/60 p-3">
+        <label
+          for="auto-backup-checkbox"
+          class="flex cursor-pointer items-start justify-between gap-3"
+        >
+          <div class="space-y-0.5">
+            <span class="block text-xs font-medium text-neutral-800">Automatic backups</span>
+            <span class="block text-[11px] text-neutral-500">
+              {#if backupManager.fileName}
+                Backing up to <code
+                  class="rounded bg-neutral-200/70 px-1 py-0.5 font-mono text-[10px] text-neutral-700"
+                  >{backupManager.fileName}</code
+                >
+              {:else}
+                Saves application state to disk on change
+              {/if}
+            </span>
+          </div>
+          <input
+            id="auto-backup-checkbox"
+            type="checkbox"
+            checked={backupManager.isAutoBackupEnabled}
+            onchange={handleToggleAutoBackup}
+            class="mt-0.5 h-4 w-4 rounded border-neutral-300 text-neutral-800 focus:ring-neutral-500"
+          />
+        </label>
+        {#if backupManager.needsPermission}
+          <div class="mt-2 border-t border-neutral-200/60 pt-2">
+            <button
+              type="button"
+              onclick={() => backupManager.requestFilePermission()}
+              class="text-[11px] font-medium text-amber-600 underline hover:text-amber-700"
+            >
+              File permission required — click to re-authorize
+            </button>
+          </div>
+        {/if}
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          onclick={onDownloadData}
+          onclick={handleManualExport}
           class="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 shadow-xs hover:bg-neutral-50 active:bg-neutral-100"
         >
-          Download
+          Manual Export
+        </button>
+        <button
+          type="button"
+          onclick={handleImport}
+          title={backupManager.fileName
+            ? `Import from ${backupManager.fileName}`
+            : "Import from file"}
+          class="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 shadow-xs hover:bg-neutral-50 active:bg-neutral-100"
+        >
+          Import
         </button>
         <button
           type="button"

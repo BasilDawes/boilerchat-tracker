@@ -53,6 +53,7 @@ export interface AppSettings {
   targetPercent?: number
   bullets?: number
   domains?: DomainDeadlines
+  autoBackup?: boolean
 }
 
 export const DEFAULT_SETTINGS = {
@@ -62,6 +63,7 @@ export const DEFAULT_SETTINGS = {
   targetPercent: 80,
   bullets: 5,
   domains: DEFAULT_DOMAIN_DEADLINES,
+  autoBackup: false,
 } satisfies AppSettings
 
 export type ExtractionStatus = "matched" | "ambiguous" | "unidentified"

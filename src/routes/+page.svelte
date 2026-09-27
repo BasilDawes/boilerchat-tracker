@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte"
   import { browser } from "$app/environment"
   import {
     Header,
@@ -14,6 +15,7 @@
     ProcessingModal,
     ReviewNotesModal,
     settingsStore,
+    backupManager,
     exportSettingsAsJson,
     calculateTrackerStats,
     isResidentCompleted,
@@ -109,6 +111,10 @@
     isOpen: false,
     step: "idle",
     stepText: "",
+  })
+
+  onMount(() => {
+    backupManager.init()
   })
 
   // Tracker stats computed from unarchived residents
@@ -340,19 +346,30 @@
     input.click()
   }
 
+  function handleDataImported() {
+    settingsStore.load()
+    academicYears = loadSavedYears()
+    selectedYear = loadCurrentYear(academicYears)
+    residents = loadSavedResidentsForYear(selectedYear)
+    selectedResident = null
+  }
+
   function handleDeleteData() {
     settingsStore.reset()
     if (browser) {
       try {
-        localStorage.removeItem(RESIDENTS_STORAGE_KEY)
-        localStorage.removeItem(YEARS_STORAGE_KEY)
-        localStorage.removeItem(CURRENT_YEAR_STORAGE_KEY)
-        localStorage.removeItem(ATTEMPTS_STORAGE_KEY)
-        for (const yr of academicYears) {
-          localStorage.removeItem(getResidentsStorageKey(yr))
+        const keysToRemove: string[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.startsWith("boilerchat_")) {
+            keysToRemove.push(key)
+          }
+        }
+        for (const k of keysToRemove) {
+          localStorage.removeItem(k)
         }
       } catch (e) {
-        console.error("Failed to clear residents from localStorage:", e)
+        console.error("Failed to clear localStorage:", e)
       }
     }
     academicYears = []
@@ -594,7 +611,8 @@
       settings={settingsStore.current}
       onClose={() => (isSettingsOpen = false)}
       onChange={(newSettings) => settingsStore.update(newSettings)}
-      onDownloadData={() => exportSettingsAsJson(settingsStore.current)}
+      onExportData={() => backupManager.manualExport()}
+      onImportData={handleDataImported}
       onDeleteData={handleDeleteData}
     />
   </div>
