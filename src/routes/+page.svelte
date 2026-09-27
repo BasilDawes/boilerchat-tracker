@@ -9,6 +9,8 @@
     FloatingActions,
     ResidentModal,
     SettingsModal,
+    settingsStore,
+    exportSettingsAsJson,
     mockStats,
     mockRoomGroups,
     mockArchivedResidents,
@@ -99,6 +101,13 @@
     />
 
     <!-- Settings Modal -->
-    <SettingsModal isOpen={isSettingsOpen} onClose={() => (isSettingsOpen = false)} />
+    <SettingsModal
+      isOpen={isSettingsOpen}
+      settings={settingsStore.current}
+      onClose={() => (isSettingsOpen = false)}
+      onChange={(newSettings) => settingsStore.update(newSettings)}
+      onDownloadData={() => exportSettingsAsJson(settingsStore.current)}
+      onDeleteData={() => settingsStore.reset()}
+    />
   </div>
 </main>

@@ -1,4 +1,5 @@
 export * from "./types"
+export * from "./settings.svelte"
 export * from "./mock-data"
 export { default as Header } from "./components/Header.svelte"
 export { default as ProgressBar } from "./components/ProgressBar.svelte"

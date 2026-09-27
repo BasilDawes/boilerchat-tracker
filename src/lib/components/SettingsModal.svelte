@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { untrack } from "svelte"
   import type { AppSettings } from "$lib/types"
+  import { defaultSettings } from "$lib/settings.svelte"
 
   interface Props {
     isOpen: boolean
@@ -12,61 +14,48 @@
 
   let {
     isOpen,
-    settings = {
-      assemblyAiKey: "",
-      openRouterKey: "",
-      llmModel: "chatgpt",
-      targetPercent: 80,
-      bullets: 5,
-      domains: {
-        d1: "8/1",
-        d2: "10/12",
-        d3: "--",
-        d4: "--",
-      },
-    },
+    settings,
     onClose,
     onChange,
     onDownloadData,
     onDeleteData,
   }: Props = $props()
 
-  let localAssemblyAiKey = $state("")
-  let localOpenRouterKey = $state("")
-  let localLlmModel = $state("chatgpt")
-  let localTargetPercent = $state(80)
-  let localBullets = $state(5)
-  let localD1 = $state("8/1")
-  let localD2 = $state("10/12")
-  let localD3 = $state("--")
-  let localD4 = $state("--")
+  function copySettings(source?: AppSettings) {
+    return {
+      ...defaultSettings,
+      ...source,
+      domains: {
+        ...defaultSettings.domains,
+        ...source?.domains,
+      },
+    }
+  }
+
+  let localSettings = $state(copySettings())
 
   $effect(() => {
-    localAssemblyAiKey = settings.assemblyAiKey ?? ""
-    localOpenRouterKey = settings.openRouterKey ?? ""
-    localLlmModel = settings.llmModel ?? "chatgpt"
-    localTargetPercent = settings.targetPercent ?? 80
-    localBullets = settings.bullets ?? 5
-    localD1 = settings.domains?.d1 ?? "8/1"
-    localD2 = settings.domains?.d2 ?? "10/12"
-    localD3 = settings.domains?.d3 ?? "--"
-    localD4 = settings.domains?.d4 ?? "--"
+    if (isOpen) {
+      untrack(() => {
+        localSettings = copySettings(settings)
+      })
+    }
   })
 
   function notifyChange() {
     onChange?.({
-      assemblyAiKey: localAssemblyAiKey,
-      openRouterKey: localOpenRouterKey,
-      llmModel: localLlmModel,
-      targetPercent: localTargetPercent,
-      bullets: localBullets,
+      ...localSettings,
+      targetPercent: Number(localSettings.targetPercent) || 0,
+      bullets: Number(localSettings.bullets) || 0,
       domains: {
-        d1: localD1,
-        d2: localD2,
-        d3: localD3,
-        d4: localD4,
+        ...localSettings.domains,
       },
     })
+  }
+
+  function handleDelete() {
+    onDeleteData?.()
+    localSettings = copySettings()
   }
 </script>
 
@@ -120,8 +109,8 @@
           </label>
           <input
             id="assembly-ai-input"
-            type="text"
-            bind:value={localAssemblyAiKey}
+            type="password"
+            bind:value={localSettings.assemblyAiKey}
             oninput={notifyChange}
             placeholder="Key..."
             class="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 focus:outline-hidden"
@@ -130,12 +119,12 @@
 
         <div>
           <label for="open-router-input" class="mb-1 block text-xs font-medium text-neutral-600">
-            open router
+            OpenRouter
           </label>
           <input
             id="open-router-input"
-            type="text"
-            bind:value={localOpenRouterKey}
+            type="password"
+            bind:value={localSettings.openRouterKey}
             oninput={notifyChange}
             placeholder="Key..."
             class="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 focus:outline-hidden"
@@ -149,7 +138,7 @@
           <div class="relative">
             <select
               id="llm-model-input"
-              bind:value={localLlmModel}
+              bind:value={localSettings.llmModel}
               onchange={notifyChange}
               class="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-1.5 pr-8 text-sm text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
             >
@@ -179,7 +168,7 @@
       <section class="space-y-3">
         <h3 class="text-sm font-semibold text-neutral-900">Boilerchats</h3>
 
-        <div class="flex items-center gap-6">
+        <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <label for="target-percent-input" class="text-xs font-medium text-neutral-600">
               Target %:
@@ -187,9 +176,9 @@
             <input
               id="target-percent-input"
               type="number"
-              bind:value={localTargetPercent}
+              bind:value={localSettings.targetPercent}
               oninput={notifyChange}
-              class="w-14 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
+              class="h-8 w-14 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
             />
           </div>
 
@@ -200,53 +189,53 @@
             <input
               id="bullets-input"
               type="number"
-              bind:value={localBullets}
+              bind:value={localSettings.bullets}
               oninput={notifyChange}
-              class="w-12 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
+              class="h-8 w-12 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
             />
           </div>
         </div>
 
-        <div class="flex items-center gap-3 pt-1">
-          <span class="text-xs font-medium text-neutral-600">Domains</span>
-          <div class="flex items-center gap-2">
+        <div class="flex items-start justify-between gap-4 pt-1">
+          <span class="flex h-8 items-center text-xs font-medium text-neutral-600"> Domains </span>
+          <div class="flex flex-1 items-start justify-between">
             <div class="flex flex-col items-center gap-1">
               <input
-                type="text"
+                type="date"
                 aria-label="Domain 1"
-                bind:value={localD1}
+                bind:value={localSettings.domains.d1}
                 oninput={notifyChange}
-                class="w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
+                class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
               />
               <span class="text-[11px] text-neutral-500">D1</span>
             </div>
             <div class="flex flex-col items-center gap-1">
               <input
-                type="text"
+                type="date"
                 aria-label="Domain 2"
-                bind:value={localD2}
+                bind:value={localSettings.domains.d2}
                 oninput={notifyChange}
-                class="w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
+                class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
               />
               <span class="text-[11px] text-neutral-500">D2</span>
             </div>
             <div class="flex flex-col items-center gap-1">
               <input
-                type="text"
+                type="date"
                 aria-label="Domain 3"
-                bind:value={localD3}
+                bind:value={localSettings.domains.d3}
                 oninput={notifyChange}
-                class="w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
+                class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
               />
               <span class="text-[11px] text-neutral-500">D3</span>
             </div>
             <div class="flex flex-col items-center gap-1">
               <input
-                type="text"
+                type="date"
                 aria-label="Domain 4"
-                bind:value={localD4}
+                bind:value={localSettings.domains.d4}
                 oninput={notifyChange}
-                class="w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
+                class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 focus:outline-hidden"
               />
               <span class="text-[11px] text-neutral-500">D4</span>
             </div>
@@ -269,10 +258,10 @@
           </button>
           <button
             type="button"
-            onclick={onDeleteData}
-            class="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 shadow-xs hover:bg-neutral-50 active:bg-neutral-100"
+            onclick={handleDelete}
+            class="rounded-md border border-red-600 bg-red-600 px-3 py-1.5 text-xs font-medium text-white shadow-xs hover:bg-red-700 active:bg-red-800"
           >
-            delete
+            Delete
           </button>
         </div>
       </section>
