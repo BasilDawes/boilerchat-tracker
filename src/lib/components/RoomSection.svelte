@@ -13,7 +13,7 @@
   let { roomNumber, residents, target, deadlines, onSelectResident }: Props = $props()
 </script>
 
-<div class="flex items-start gap-2 border-b border-neutral-100 py-3 last:border-b-0">
+<div class="flex items-start gap-2 pt-3">
   <!-- Room Number Spine / Left Label -->
   <div class="flex flex-col items-center justify-center pt-2">
     <span
