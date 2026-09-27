@@ -135,6 +135,30 @@
     }
   }
 
+  function autoResize(node: HTMLTextAreaElement, _content?: string) {
+    function adjust() {
+      if (typeof CSS !== "undefined" && CSS.supports("field-sizing", "content")) {
+        return
+      }
+      requestAnimationFrame(() => {
+        node.style.height = "auto"
+        node.style.height = `${node.scrollHeight}px`
+      })
+    }
+
+    adjust()
+    node.addEventListener("input", adjust)
+
+    return {
+      update() {
+        adjust()
+      },
+      destroy() {
+        node.removeEventListener("input", adjust)
+      },
+    }
+  }
+
   function handleDialogClose() {
     if (isOpen) {
       handleSaveClick()
@@ -254,17 +278,18 @@
           </div>
           <textarea
             id={`domain-${domain.id}-input`}
-            rows="5"
+            rows="1"
             disabled={!isCurrent}
             value={content}
+            use:autoResize={content}
             oninput={isCurrent
               ? (e) => handleContentChange((e.target as HTMLTextAreaElement).value)
               : undefined}
             onkeydown={isCurrent ? handleKeyDown : undefined}
             onblur={isCurrent ? handleSaveClick : undefined}
             placeholder={isCurrent ? "Free text input (use - for bullets)..." : ""}
-            class="w-full rounded-lg border border-neutral-300 p-2.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 disabled:border-neutral-200 disabled:bg-neutral-50 disabled:text-neutral-500"
-          ></textarea>
+            class="[field-sizing:content] w-full resize-none rounded-lg border border-neutral-300 p-2.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 disabled:border-neutral-200 disabled:bg-neutral-50 disabled:text-neutral-500"
+            style="field-sizing: content;"></textarea>
         </div>
       {/each}
     </div>
