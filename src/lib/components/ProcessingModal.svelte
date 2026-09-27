@@ -6,11 +6,12 @@
     step: PipelineStep
     stepText: string
     errorMessage?: string
+    title?: string
     onClose?: () => void
     onOpenSettings?: () => void
   }
 
-  let { isOpen, step, stepText, errorMessage, onClose, onOpenSettings }: Props = $props()
+  let { isOpen, step, stepText, errorMessage, title, onClose, onOpenSettings }: Props = $props()
 
   let dialogEl = $state<HTMLDialogElement | null>(null)
 
@@ -42,7 +43,7 @@
 >
   <div class="flex flex-col items-center justify-center py-2">
     <h2 id="processing-modal-title" class="text-base font-semibold text-neutral-900">
-      Processing recording
+      {title || (step === "error" ? "Unable to process" : "Processing recording")}
     </h2>
 
     {#if step === "error"}

@@ -92,6 +92,7 @@ export interface ProcessingState {
   step: PipelineStep
   stepText: string
   errorMessage?: string
+  title?: string
 }
 
 export interface AssemblyAiUtterance {

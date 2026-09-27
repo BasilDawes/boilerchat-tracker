@@ -403,7 +403,7 @@
     residents = []
   }
 
-  async function handleAudioReady(audioFile: File) {
+  function checkApiKeysConfigured(action: "recording" | "processing audio" = "recording"): boolean {
     const assemblyKey = settingsStore.current.assemblyAiKey?.trim()
     const openRouterKey = settingsStore.current.openRouterKey?.trim()
 
@@ -415,8 +415,24 @@
         isOpen: true,
         step: "error",
         stepText: "",
-        errorMessage: `Please set your ${missing.join(" and ")} API key in Settings before processing audio.`,
+        errorMessage: `Please set your ${missing.join(" and ")} API key in Settings before ${action}.`,
+        title: "API Keys Required",
       }
+      return false
+    }
+    return true
+  }
+
+  function handleBeforeRecord(): boolean {
+    return checkApiKeysConfigured("recording")
+  }
+
+  function handleBeforeUpload(): boolean {
+    return checkApiKeysConfigured("processing audio")
+  }
+
+  async function handleAudioReady(audioFile: File) {
+    if (!checkApiKeysConfigured("processing audio")) {
       return
     }
 
@@ -595,6 +611,8 @@
     <!-- Floating Actions (Record, Upload) -->
     <FloatingActions
       onAudioReady={handleAudioReady}
+      onBeforeRecord={handleBeforeRecord}
+      onBeforeUpload={handleBeforeUpload}
       isProcessing={processingState.isOpen && processingState.step !== "error"}
     />
 
@@ -604,6 +622,7 @@
       step={processingState.step}
       stepText={processingState.stepText}
       errorMessage={processingState.errorMessage}
+      title={processingState.title}
       onClose={() => (processingState = { isOpen: false, step: "idle", stepText: "" })}
       onOpenSettings={() => {
         processingState = { isOpen: false, step: "idle", stepText: "" }

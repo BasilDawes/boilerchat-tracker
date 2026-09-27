@@ -4,9 +4,11 @@
   interface Props {
     onAudioReady?: (audioFile: File) => void
     isProcessing?: boolean
+    onBeforeRecord?: () => boolean | Promise<boolean>
+    onBeforeUpload?: () => boolean | Promise<boolean>
   }
 
-  let { onAudioReady, isProcessing = false }: Props = $props()
+  let { onAudioReady, isProcessing = false, onBeforeRecord, onBeforeUpload }: Props = $props()
 
   let isRecording = $state(false)
   let recordingSeconds = $state(0)
@@ -25,6 +27,11 @@
 
   async function startRecording() {
     if (isProcessing) return
+
+    if (onBeforeRecord) {
+      const canProceed = await onBeforeRecord()
+      if (!canProceed) return
+    }
 
     if (!navigator.mediaDevices?.getUserMedia) {
       alert("Audio recording is not supported in this browser or environment.")
@@ -130,8 +137,12 @@
     cleanupMedia()
   })
 
-  function handleUploadClick() {
+  async function handleUploadClick() {
     if (isProcessing || isRecording) return
+    if (onBeforeUpload) {
+      const canProceed = await onBeforeUpload()
+      if (!canProceed) return
+    }
     fileInputEl?.click()
   }
 
