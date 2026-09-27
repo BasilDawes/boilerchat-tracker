@@ -8,11 +8,11 @@
   }
 
   let {
-    percent = 5,
-    doneCount = 3,
-    ratePerWeek = 10,
-    remainingCount = 37,
-    totalCount = 50,
+    percent = 0,
+    doneCount = 0,
+    ratePerWeek = 0,
+    remainingCount = 0,
+    totalCount = 0,
   }: Props = $props()
 </script>
 

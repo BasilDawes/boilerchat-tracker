@@ -9,9 +9,9 @@
   }
 
   let {
-    academicYears = ["26-27", "25-26"],
-    selectedYear = "26-27",
-    dueText = "due: 1 wk, 2 dy",
+    academicYears = [],
+    selectedYear = "",
+    dueText = "",
     onSelectYear,
     onAddResident,
     onOpenSettings,
