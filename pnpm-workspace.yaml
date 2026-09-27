@@ -1,7 +1,3 @@
 allowBuilds:
   workerd: true
   esbuild: true
-
-# Only needed because pnpm < 11 commplains
-packages:
-  - '.'
