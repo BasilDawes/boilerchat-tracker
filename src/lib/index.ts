@@ -1,1 +1,11 @@
-// place files you want to import through the `$lib` alias in this folder.
+export * from "./types"
+export * from "./mock-data"
+export { default as Header } from "./components/Header.svelte"
+export { default as ProgressBar } from "./components/ProgressBar.svelte"
+export { default as ControlsBar } from "./components/ControlsBar.svelte"
+export { default as ResidentCard } from "./components/ResidentCard.svelte"
+export { default as RoomSection } from "./components/RoomSection.svelte"
+export { default as ArchivedSection } from "./components/ArchivedSection.svelte"
+export { default as FloatingActions } from "./components/FloatingActions.svelte"
+export { default as LogAttemptButton } from "./components/LogAttemptButton.svelte"
+export { default as ResidentModal } from "./components/ResidentModal.svelte"
