@@ -18,7 +18,7 @@
   }: Props = $props()
 </script>
 
-<header class="flex items-center justify-between gap-2 border-b border-neutral-200 px-4 py-3">
+<header class="flex items-center justify-between gap-2 px-4 py-3">
   <!-- Year Selector -->
   <div class="relative">
     <label for="year-selector" class="sr-only">Academic Year</label>

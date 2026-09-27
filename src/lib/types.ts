@@ -36,3 +36,19 @@ export interface TrackerStats {
 }
 
 export type SortOption = "room" | "alphabet" | "bullets" | "last_seen"
+
+export interface DomainDeadlines {
+  d1?: string
+  d2?: string
+  d3?: string
+  d4?: string
+}
+
+export interface AppSettings {
+  assemblyAiKey?: string
+  openRouterKey?: string
+  llmModel?: string
+  targetPercent?: number
+  bullets?: number
+  domains?: DomainDeadlines
+}

@@ -8,6 +8,7 @@
     LogAttemptButton,
     FloatingActions,
     ResidentModal,
+    SettingsModal,
     mockStats,
     mockRoomGroups,
     mockArchivedResidents,
@@ -21,6 +22,7 @@
   let selectedSort = $state<SortOption>("room")
   let selectedResident = $state<Resident | null>(null)
   let isModalOpen = $state(false)
+  let isSettingsOpen = $state(false)
 
   function handleSelectResident(resident: Resident) {
     selectedResident = resident
@@ -36,18 +38,16 @@
   <title>Boilerchat Tracker</title>
 </svelte:head>
 
-<main class="flex min-h-screen justify-center bg-neutral-100 py-0 sm:py-6">
+<main class="flex min-h-screen justify-center">
   <!-- Mobile Container Shell -->
-  <div
-    class="relative flex min-h-screen w-full max-w-md flex-col overflow-hidden bg-white sm:min-h-[840px] sm:rounded-2xl sm:border sm:border-neutral-200 sm:shadow-lg"
-  >
+  <div class="relative flex min-h-screen w-full max-w-md flex-col overflow-hidden">
     <!-- Top Header -->
     <Header
       {selectedYear}
       dueText={mockStats.dueText}
       onSelectYear={(yr) => (selectedYear = yr)}
       onAddResident={() => {}}
-      onOpenSettings={() => {}}
+      onOpenSettings={() => (isSettingsOpen = true)}
     />
 
     <!-- Progress Metrics -->
@@ -58,8 +58,6 @@
       remainingCount={mockStats.remainingCount}
       totalCount={mockStats.totalCount}
     />
-
-    <hr class="mx-4 border-neutral-200" />
 
     <!-- Search & Sort Controls -->
     <ControlsBar
@@ -78,9 +76,6 @@
           onSelectResident={handleSelectResident}
         />
       {/each}
-
-      <!-- Visual indicator for additional rooms (...) -->
-      <div class="py-2 text-center text-sm tracking-widest text-neutral-400 select-none">• • •</div>
 
       <!-- Archived Residents Section -->
       <ArchivedSection
@@ -102,5 +97,8 @@
       onClose={handleCloseModal}
       onArchive={() => handleCloseModal()}
     />
+
+    <!-- Settings Modal -->
+    <SettingsModal isOpen={isSettingsOpen} onClose={() => (isSettingsOpen = false)} />
   </div>
 </main>

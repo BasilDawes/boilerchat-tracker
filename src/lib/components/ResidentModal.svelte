@@ -166,10 +166,5 @@
 
       <!-- Note: D3 & D4 are not rendered because they are future domains -->
     </div>
-
-    <!-- Footer: auto-save indicator -->
-    <div class="border-t border-neutral-100 pt-3 text-center">
-      <span class="text-xs text-neutral-400">auto-save</span>
-    </div>
   </div>
 {/if}

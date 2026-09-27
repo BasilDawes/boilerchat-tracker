@@ -23,6 +23,12 @@
     <div class="text-neutral-500">{ratePerWeek}/wk</div>
   </div>
 
+  <!-- Bottom labels -->
+  <div class="flex items-baseline justify-between text-xs text-neutral-500">
+    <div>{doneCount} done</div>
+    <div>{remainingCount}/{totalCount} remain</div>
+  </div>
+
   <!-- Progress bar line -->
   <div class="my-1.5 h-2.5 w-full overflow-hidden rounded-full bg-neutral-200">
     <div
@@ -33,11 +39,5 @@
       aria-valuemin={0}
       aria-valuemax={100}
     ></div>
-  </div>
-
-  <!-- Bottom labels -->
-  <div class="flex items-baseline justify-between text-xs text-neutral-500">
-    <div>{doneCount} done</div>
-    <div>{remainingCount}/{totalCount} remain</div>
   </div>
 </section>
