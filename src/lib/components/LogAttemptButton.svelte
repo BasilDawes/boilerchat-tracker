@@ -35,6 +35,6 @@
     onclick={handleCopy}
     class="flex-1 rounded-xl border border-neutral-300 bg-white py-3 text-center text-sm font-semibold text-neutral-800 shadow-xs transition hover:bg-neutral-50 active:bg-neutral-100"
   >
-    {copied ? "copied!" : "copy attempts"}
+    {copied ? "Copied!" : "Copy attempts"}
   </button>
 </div>
