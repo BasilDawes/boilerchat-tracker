@@ -38,7 +38,7 @@
       value={searchQuery}
       oninput={(e) => onSearchChange?.((e.target as HTMLInputElement).value)}
       placeholder="Search"
-      class="w-full rounded-md border border-neutral-300 bg-white py-1.5 pr-3 pl-8 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 focus:outline-hidden"
+      class="w-full rounded-md border border-neutral-300 bg-white py-1.5 pr-3 pl-8 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 "
     />
   </div>
 
@@ -50,7 +50,7 @@
         id="sort-selector"
         value={selectedSort}
         onchange={(e) => onSortChange?.((e.target as HTMLSelectElement).value as SortOption)}
-        class="appearance-none rounded-md border border-neutral-300 bg-white py-1 pr-6 pl-2 text-xs font-medium text-neutral-800 shadow-2xs focus:border-neutral-500 focus:outline-hidden"
+        class="appearance-none rounded-md border border-neutral-300 bg-white py-1 pr-6 pl-2 text-xs font-medium text-neutral-800 shadow-2xs focus:border-neutral-500 "
       >
         {#each sortOptions as opt (opt.value)}
           <option value={opt.value}>{opt.label}</option>

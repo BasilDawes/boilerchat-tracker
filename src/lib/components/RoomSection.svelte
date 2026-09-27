@@ -1,14 +1,16 @@
 <script lang="ts">
-  import type { Resident } from "$lib/types"
+  import type { DomainDeadlines, Resident } from "$lib/types"
   import ResidentCard from "./ResidentCard.svelte"
 
   interface Props {
     roomNumber: string
     residents: Resident[]
+    target?: number
+    deadlines?: DomainDeadlines
     onSelectResident?: (resident: Resident) => void
   }
 
-  let { roomNumber, residents, onSelectResident }: Props = $props()
+  let { roomNumber, residents, target, deadlines, onSelectResident }: Props = $props()
 </script>
 
 <div class="flex items-start gap-3 border-b border-neutral-100 py-3 last:border-b-0">
@@ -24,7 +26,7 @@
   <!-- Residents Grid / Row -->
   <div class="flex flex-1 flex-wrap items-start gap-4">
     {#each residents as resident (resident.id)}
-      <ResidentCard {resident} onClick={onSelectResident} />
+      <ResidentCard {resident} {target} {deadlines} onClick={onSelectResident} />
     {/each}
   </div>
 </div>

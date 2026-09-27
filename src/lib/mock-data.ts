@@ -14,30 +14,27 @@ export const mockResidents: Resident[] = [
     id: "p1",
     name: "Person 1",
     roomNumber: "1102",
-    badge: "us",
     lastSeen: "8/1",
     domains: [
       {
-        id: "d2",
-        title: "Domain 2",
-        status: "current",
-        content: "",
-      },
-      {
         id: "d1",
         title: "Domain 1",
-        status: "past",
-        bullets: ["likes class", "has friends"],
+        content: "- likes class\n- has friends",
+      },
+      {
+        id: "d2",
+        title: "Domain 2",
+        content: "",
       },
       {
         id: "d3",
         title: "Domain 3",
-        status: "future",
+        content: "- looking for internship",
       },
       {
         id: "d4",
         title: "Domain 4",
-        status: "future",
+        content: "",
       },
     ],
   },
@@ -45,20 +42,27 @@ export const mockResidents: Resident[] = [
     id: "p2",
     name: "Person 2",
     roomNumber: "1102",
-    badge: "checked",
     lastSeen: "8/3",
     domains: [
       {
-        id: "d2",
-        title: "Domain 2",
-        status: "current",
-        content: "Met in hallway, doing well with courses.",
-      },
-      {
         id: "d1",
         title: "Domain 1",
-        status: "past",
-        bullets: ["adjusted to campus", "joined club"],
+        content: "- adjusted to campus\n- joined club",
+      },
+      {
+        id: "d2",
+        title: "Domain 2",
+        content: "- met in hallway\n- doing well with courses",
+      },
+      {
+        id: "d3",
+        title: "Domain 3",
+        content: "- studying for midterms",
+      },
+      {
+        id: "d4",
+        title: "Domain 4",
+        content: "- plans to stay in dorm next year",
       },
     ],
   },
@@ -67,6 +71,18 @@ export const mockResidents: Resident[] = [
     name: "Person 3",
     roomNumber: "1102",
     lastSeen: "7/28",
+    domains: [
+      {
+        id: "d1",
+        title: "Domain 1",
+        content: "- quiet, studies in library",
+      },
+      {
+        id: "d2",
+        title: "Domain 2",
+        content: "",
+      },
+    ],
   },
   {
     id: "p4",

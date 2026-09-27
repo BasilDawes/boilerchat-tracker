@@ -17,3 +17,9 @@ declare global {
 }
 
 export {}
+
+declare module "svelte/elements" {
+  interface DialogHTMLAttributes<T> {
+    closedby?: "any" | "closerequest" | "none" | (string & {})
+  }
+}

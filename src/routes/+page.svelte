@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from "$app/environment"
   import {
     Header,
     ProgressBar,
@@ -16,7 +17,23 @@
     mockArchivedResidents,
     type Resident,
     type SortOption,
+    type RoomGroup,
   } from "$lib"
+
+  const RESIDENTS_STORAGE_KEY = "boilerchat_residents"
+
+  function loadSavedRoomGroups(): RoomGroup[] {
+    if (!browser) return mockRoomGroups
+    try {
+      const stored = localStorage.getItem(RESIDENTS_STORAGE_KEY)
+      if (stored) {
+        return JSON.parse(stored)
+      }
+    } catch (e) {
+      console.error("Failed to load residents from localStorage:", e)
+    }
+    return mockRoomGroups
+  }
 
   // UI state separated from business logic
   let selectedYear = $state("26-27")
@@ -25,6 +42,16 @@
   let selectedResident = $state<Resident | null>(null)
   let isModalOpen = $state(false)
   let isSettingsOpen = $state(false)
+  let roomGroups = $state<RoomGroup[]>(loadSavedRoomGroups())
+
+  function persistRoomGroups(groups: RoomGroup[]) {
+    if (!browser) return
+    try {
+      localStorage.setItem(RESIDENTS_STORAGE_KEY, JSON.stringify(groups))
+    } catch (e) {
+      console.error("Failed to save residents to localStorage:", e)
+    }
+  }
 
   function handleSelectResident(resident: Resident) {
     selectedResident = resident
@@ -33,6 +60,50 @@
 
   function handleCloseModal() {
     isModalOpen = false
+  }
+
+  function handleSaveResident(updated: Resident) {
+    selectedResident = updated
+    roomGroups = roomGroups.map((group) => ({
+      ...group,
+      residents: group.residents.map((r) => (r.id === updated.id ? updated : r)),
+    }))
+    persistRoomGroups(roomGroups)
+  }
+
+  function handleDomainChange(domainId: string, value: string) {
+    if (!selectedResident) return
+    const domains = selectedResident.domains ? [...selectedResident.domains] : []
+    const existingIndex = domains.findIndex((d) => d.id === domainId)
+    if (existingIndex >= 0) {
+      domains[existingIndex] = {
+        ...domains[existingIndex],
+        content: value,
+      }
+    } else {
+      domains.push({
+        id: domainId,
+        title: `Domain ${domainId.replace("d", "")}`,
+        content: value,
+      })
+    }
+    const updated = {
+      ...selectedResident,
+      domains,
+    }
+    handleSaveResident(updated)
+  }
+
+  function handleDeleteData() {
+    settingsStore.reset()
+    if (browser) {
+      try {
+        localStorage.removeItem(RESIDENTS_STORAGE_KEY)
+      } catch (e) {
+        console.error("Failed to clear residents from localStorage:", e)
+      }
+    }
+    roomGroups = mockRoomGroups
   }
 </script>
 
@@ -71,10 +142,12 @@
 
     <!-- Scrollable Room & Resident Content Area -->
     <div class="flex-1 px-4 py-2 pb-24">
-      {#each mockRoomGroups as group (group.roomNumber)}
+      {#each roomGroups as group (group.roomNumber)}
         <RoomSection
           roomNumber={group.roomNumber}
           residents={group.residents}
+          deadlines={settingsStore.current.domains}
+          target={settingsStore.current.bullets}
           onSelectResident={handleSelectResident}
         />
       {/each}
@@ -89,15 +162,18 @@
       <LogAttemptButton onClick={() => {}} />
     </div>
 
-    <!-- Floating Action Buttons (Record, Upload) -->
+    <!-- Floating Actions (Record, Upload) -->
     <FloatingActions onRecord={() => {}} onUpload={() => {}} />
 
     <!-- Detail Modal -->
     <ResidentModal
       isOpen={isModalOpen}
       resident={selectedResident}
+      deadlines={settingsStore.current.domains}
       onClose={handleCloseModal}
       onArchive={() => handleCloseModal()}
+      onDomainChange={handleDomainChange}
+      onSave={handleSaveResident}
     />
 
     <!-- Settings Modal -->
@@ -107,7 +183,7 @@
       onClose={() => (isSettingsOpen = false)}
       onChange={(newSettings) => settingsStore.update(newSettings)}
       onDownloadData={() => exportSettingsAsJson(settingsStore.current)}
-      onDeleteData={() => settingsStore.reset()}
+      onDeleteData={handleDeleteData}
     />
   </div>
 </main>

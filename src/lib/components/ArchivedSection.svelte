@@ -18,7 +18,7 @@
         type="button"
         onclick={() => onSelectResident?.(resident)}
         aria-label={`Archived resident ${resident.name}`}
-        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-dashed border-neutral-300 bg-neutral-50 text-neutral-400 hover:border-neutral-400 hover:text-neutral-600 focus:outline-hidden"
+        class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-dashed border-neutral-300 bg-neutral-50 text-neutral-400 hover:border-neutral-400 hover:text-neutral-600 "
       >
         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

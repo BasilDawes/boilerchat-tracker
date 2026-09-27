@@ -1,18 +1,28 @@
 <script lang="ts">
-  import type { Resident } from "$lib/types"
+  import type { DomainDeadlines, Resident } from "$lib/types"
+  import { settingsStore } from "$lib/settings.svelte"
+  import { getCurrentDomainBullets } from "$lib/domain-utils"
 
   interface Props {
     resident: Resident
+    target?: number
+    deadlines?: DomainDeadlines
     onClick?: (resident: Resident) => void
   }
 
-  let { resident, onClick }: Props = $props()
+  let { resident, target, deadlines, onClick }: Props = $props()
+
+  let effectiveDeadlines = $derived(deadlines ?? settingsStore.current.domains)
+  let effectiveTarget = $derived(target ?? settingsStore.current.bullets ?? 5)
+  let completedCount = $derived(getCurrentDomainBullets(resident, effectiveDeadlines))
+  let isChecked = $derived(effectiveTarget > 0 && completedCount >= effectiveTarget)
+  let showFraction = $derived(!isChecked && completedCount > 0)
 </script>
 
 <button
   type="button"
   onclick={() => onClick?.(resident)}
-  class="group flex flex-col items-center text-left focus:outline-hidden"
+  class="group flex flex-col items-center text-left"
   aria-label={`View details for ${resident.name}`}
 >
   <!-- Card image/avatar container -->
@@ -20,14 +30,7 @@
     class="relative aspect-3/4 w-full max-w-20 min-w-16 rounded-lg border-2 border-neutral-300 bg-neutral-100 transition-colors group-hover:border-neutral-500 group-focus:ring-2 group-focus:ring-neutral-400"
   >
     <!-- Badge indicator in top-left corner -->
-    {#if resident.badge === "us"}
-      <span
-        class="absolute -top-1.5 -left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-[10px] font-bold text-white shadow-xs"
-        title="Status: US"
-      >
-        US
-      </span>
-    {:else if resident.badge === "checked"}
+    {#if isChecked}
       <span
         class="absolute -top-1.5 -left-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-neutral-300 bg-white text-emerald-600 shadow-xs"
         title="Completed"
@@ -39,6 +42,13 @@
             clip-rule="evenodd"
           />
         </svg>
+      </span>
+    {:else if showFraction}
+      <span
+        class="absolute -top-1.5 -left-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-neutral-800 px-1 text-[10px] font-bold text-white shadow-xs"
+        title={`${completedCount}/${effectiveTarget} bullets completed`}
+      >
+        {completedCount}/{effectiveTarget}
       </span>
     {/if}
 

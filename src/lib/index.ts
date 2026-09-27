@@ -1,6 +1,7 @@
 export * from "./types"
 export * from "./settings.svelte"
 export * from "./mock-data"
+export * from "./domain-utils"
 export { default as Header } from "./components/Header.svelte"
 export { default as ProgressBar } from "./components/ProgressBar.svelte"
 export { default as ControlsBar } from "./components/ControlsBar.svelte"

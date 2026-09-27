@@ -26,7 +26,7 @@
       id="year-selector"
       value={selectedYear}
       onchange={(e) => onSelectYear?.((e.target as HTMLSelectElement).value)}
-      class="appearance-none rounded-md border border-neutral-300 bg-white px-3 py-1.5 pr-7 text-sm font-semibold text-neutral-800 shadow-xs focus:border-neutral-500 focus:outline-hidden"
+      class="appearance-none rounded-md border border-neutral-300 bg-white px-3 py-1.5 pr-7 text-sm font-semibold text-neutral-800 shadow-xs focus:border-neutral-500 "
     >
       {#each academicYears as year (year)}
         <option value={year}>{year}</option>

@@ -1,12 +1,8 @@
-export type BadgeType = "us" | "checked" | null
-
 export type DomainStatus = "past" | "current" | "future"
 
 export interface DomainRecord {
   id: string
   title: string
-  status: DomainStatus
-  bullets?: string[]
   content?: string
 }
 
@@ -15,7 +11,6 @@ export interface Resident {
   name: string
   roomNumber: string
   avatarUrl?: string
-  badge?: BadgeType
   lastSeen?: string
   domains?: DomainRecord[]
   isArchived?: boolean
