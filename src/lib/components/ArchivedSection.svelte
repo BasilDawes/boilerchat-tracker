@@ -10,7 +10,9 @@
 </script>
 
 <div class="px-4 py-3">
-  <div class="mb-2 text-xs font-medium text-neutral-500">Archived</div>
+  {#if archivedResidents.length > 0}
+    <div class="mb-2 text-xs font-medium text-neutral-500">Archived</div>
+  {/if}
 
   <div class="flex items-center gap-2 overflow-x-auto pb-1">
     {#each archivedResidents as resident (resident.id)}
