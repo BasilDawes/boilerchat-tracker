@@ -14,7 +14,7 @@ export const mockResidents: Resident[] = [
     id: "p1",
     name: "Person 1",
     roomNumber: "1102",
-    lastSeen: "8/1",
+    lastSeen: "2026-08-01T12:00:00Z",
     domains: [
       {
         id: "d1",
@@ -42,7 +42,7 @@ export const mockResidents: Resident[] = [
     id: "p2",
     name: "Person 2",
     roomNumber: "1102",
-    lastSeen: "8/3",
+    lastSeen: "2026-08-03T12:00:00Z",
     domains: [
       {
         id: "d1",
@@ -70,7 +70,7 @@ export const mockResidents: Resident[] = [
     id: "p3",
     name: "Person 3",
     roomNumber: "1102",
-    lastSeen: "7/28",
+    lastSeen: "2026-07-28T12:00:00Z",
     domains: [
       {
         id: "d1",
@@ -88,13 +88,13 @@ export const mockResidents: Resident[] = [
     id: "p4",
     name: "Person 4",
     roomNumber: "1102",
-    lastSeen: "7/25",
+    lastSeen: "2026-07-25T12:00:00Z",
   },
   {
     id: "p5",
     name: "Person 5",
     roomNumber: "1201",
-    lastSeen: "8/2",
+    lastSeen: "2026-08-02T12:00:00Z",
   },
 ]
 

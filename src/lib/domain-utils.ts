@@ -1,4 +1,10 @@
-import type { DomainDeadlines, DomainRecord, DomainStatus, Resident } from "./types"
+import {
+  DEFAULT_DOMAIN_DEADLINES,
+  type DomainDeadlines,
+  type DomainRecord,
+  type DomainStatus,
+  type Resident,
+} from "./types"
 
 export interface DomainItem {
   id: string
@@ -14,13 +20,6 @@ export const DOMAIN_CONFIGS = [
   { id: "d3", title: "Domain 3", key: "d3" as const },
   { id: "d4", title: "Domain 4", key: "d4" as const },
 ]
-
-export const DEFAULT_DOMAIN_DEADLINES: Required<DomainDeadlines> = {
-  d1: "2026-09-15",
-  d2: "2026-10-15",
-  d3: "2026-11-15",
-  d4: "2026-12-15",
-}
 
 /**
  * Returns today's date formatted as YYYY-MM-DD in local time
@@ -137,4 +136,18 @@ export function getCurrentDomainBullets(
   if (!resident) return 0
   const currentDomain = getCurrentDomain(deadlines, resident.domains, currentDate)
   return getDomainBulletCount(currentDomain)
+}
+
+/**
+ * Converts a UTC date string into a human-readable format using internationalization functions.
+ */
+export function formatLastSeen(
+  utcDateString?: string | null,
+  locale?: string,
+  options: Intl.DateTimeFormatOptions = { month: "numeric", day: "numeric" },
+): string {
+  if (!utcDateString || !utcDateString.trim()) return "N/A"
+  const date = new Date(utcDateString)
+  if (isNaN(date.getTime())) return utcDateString
+  return new Intl.DateTimeFormat(locale, options).format(date)
 }

@@ -7,10 +7,11 @@
     resident: Resident
     target?: number
     deadlines?: DomainDeadlines
+    showRoom?: boolean
     onClick?: (resident: Resident) => void
   }
 
-  let { resident, target, deadlines, onClick }: Props = $props()
+  let { resident, target, deadlines, showRoom = false, onClick }: Props = $props()
 
   let effectiveDeadlines = $derived(deadlines ?? settingsStore.current.domains)
   let effectiveTarget = $derived(target ?? settingsStore.current.bullets ?? 5)
@@ -76,4 +77,9 @@
   >
     {resident.name}
   </span>
+  {#if showRoom && resident.roomNumber}
+    <span class="text-[10px] text-neutral-400">
+      {resident.roomNumber}
+    </span>
+  {/if}
 </button>

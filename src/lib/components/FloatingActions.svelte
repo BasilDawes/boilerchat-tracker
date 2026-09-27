@@ -15,7 +15,7 @@
     <button
       type="button"
       onclick={onRecord}
-      class="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100  active:bg-neutral-200"
+      class="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 active:bg-neutral-200"
     >
       <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
       <span>record</span>
@@ -27,7 +27,7 @@
     <button
       type="button"
       onclick={onUpload}
-      class="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100  active:bg-neutral-200"
+      class="flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 active:bg-neutral-200"
     >
       <svg
         class="h-3.5 w-3.5 text-neutral-700"

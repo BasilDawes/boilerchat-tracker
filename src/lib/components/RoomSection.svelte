@@ -17,7 +17,7 @@
   <!-- Room Number Spine / Left Label -->
   <div class="flex w-10 flex-col items-center justify-center pt-2">
     <span
-      class="rotate-180 text-xs font-semibold tracking-wider text-neutral-500 select-none [writing-mode:vertical-rl]"
+      class="rotate-180 text-xs font-semibold tracking-wider text-neutral-500 [writing-mode:vertical-rl]"
     >
       {roomNumber}
     </span>

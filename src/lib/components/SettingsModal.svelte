@@ -86,7 +86,7 @@
       type="button"
       onclick={() => dialogEl?.close()}
       aria-label="Close settings"
-      class="flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 "
+      class="flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
     >
       <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -116,7 +116,7 @@
           oninput={notifyChange}
           placeholder="Key..."
           autocomplete="one-time-code"
-          class="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 "
+          class="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500"
         />
       </div>
 
@@ -131,7 +131,7 @@
           oninput={notifyChange}
           placeholder="Key..."
           autocomplete="one-time-code"
-          class="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 "
+          class="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500"
         />
       </div>
 
@@ -144,7 +144,7 @@
             id="llm-model-input"
             bind:value={localSettings.llmModel}
             onchange={notifyChange}
-            class="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-1.5 pr-8 text-sm text-neutral-800 focus:border-neutral-500 "
+            class="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-1.5 pr-8 text-sm text-neutral-800 focus:border-neutral-500"
           >
             <option value="chatgpt">chatgpt</option>
             <option value="claude">claude</option>
@@ -182,7 +182,7 @@
             type="number"
             bind:value={localSettings.targetPercent}
             oninput={notifyChange}
-            class="h-8 w-14 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500 "
+            class="h-8 w-18 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500"
           />
         </div>
 
@@ -193,7 +193,7 @@
             type="number"
             bind:value={localSettings.bullets}
             oninput={notifyChange}
-            class="h-8 w-12 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500 "
+            class="h-8 w-18 rounded-md border border-neutral-300 px-2 py-1 text-center text-sm font-medium text-neutral-800 focus:border-neutral-500"
           />
         </div>
       </div>
@@ -207,7 +207,7 @@
               aria-label="Domain 1"
               bind:value={localSettings.domains.d1}
               oninput={notifyChange}
-              class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 "
+              class="h-8 w-18 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500"
             />
             <span class="text-[11px] text-neutral-500">D1</span>
           </div>
@@ -217,7 +217,7 @@
               aria-label="Domain 2"
               bind:value={localSettings.domains.d2}
               oninput={notifyChange}
-              class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 "
+              class="h-8 w-18 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500"
             />
             <span class="text-[11px] text-neutral-500">D2</span>
           </div>
@@ -227,7 +227,7 @@
               aria-label="Domain 3"
               bind:value={localSettings.domains.d3}
               oninput={notifyChange}
-              class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 "
+              class="h-8 w-18 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500"
             />
             <span class="text-[11px] text-neutral-500">D3</span>
           </div>
@@ -237,7 +237,7 @@
               aria-label="Domain 4"
               bind:value={localSettings.domains.d4}
               oninput={notifyChange}
-              class="h-8 w-14 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500 "
+              class="h-8 w-18 rounded-md border border-neutral-300 px-1 py-1 text-center text-xs font-medium text-neutral-800 focus:border-neutral-500"
             />
             <span class="text-[11px] text-neutral-500">D4</span>
           </div>

@@ -1,20 +1,11 @@
 import { browser } from "$app/environment"
-import type { AppSettings } from "./types"
+import { DEFAULT_DOMAIN_DEADLINES, DEFAULT_SETTINGS, type AppSettings } from "./types"
 
 export const STORAGE_KEY = "boilerchat_settings"
 
 export const defaultSettings = {
-  assemblyAiKey: "",
-  openRouterKey: "",
-  llmModel: "chatgpt",
-  targetPercent: 80,
-  bullets: 5,
-  domains: {
-    d1: "",
-    d2: "",
-    d3: "",
-    d4: "",
-  },
+  ...DEFAULT_SETTINGS,
+  domains: { ...DEFAULT_DOMAIN_DEADLINES },
 } satisfies AppSettings
 
 class SettingsStore {

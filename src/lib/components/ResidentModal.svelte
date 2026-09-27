@@ -2,7 +2,12 @@
   import { untrack } from "svelte"
   import type { DomainDeadlines, Resident } from "$lib/types"
   import { settingsStore } from "$lib/settings.svelte"
-  import { countBullets, getEnumeratedDomains, getTodayDateString } from "$lib/domain-utils"
+  import {
+    countBullets,
+    formatLastSeen,
+    getEnumeratedDomains,
+    getTodayDateString,
+  } from "$lib/domain-utils"
 
   interface Props {
     resident: Resident | null
@@ -173,7 +178,7 @@
             {resident.name}
           </h2>
           <p class="text-xs text-neutral-500">
-            last seen {resident.lastSeen ?? "N/A"}
+            last seen {formatLastSeen(resident.lastSeen)}
           </p>
         </div>
       </div>
@@ -184,7 +189,7 @@
           type="button"
           onclick={() => resident && onArchive?.(resident)}
           aria-label="Archive resident"
-          class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-neutral-100 hover:text-neutral-700 "
+          class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-neutral-100 hover:text-neutral-700"
         >
           <!-- Archive icon -->
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +206,7 @@
           type="button"
           onclick={() => dialogEl?.close()}
           aria-label="Close dialog"
-          class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-neutral-100 hover:text-neutral-700 "
+          class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-neutral-100 hover:text-neutral-700"
         >
           <!-- Close X icon -->
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +250,7 @@
             onkeydown={isCurrent ? handleKeyDown : undefined}
             onblur={isCurrent ? handleSaveClick : undefined}
             placeholder={isCurrent ? "Free text input (use - for bullets)..." : ""}
-            class="w-full rounded-lg border border-neutral-300 p-2.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500  disabled:border-neutral-200 disabled:bg-neutral-50 disabled:text-neutral-500"
+            class="w-full rounded-lg border border-neutral-300 p-2.5 text-sm text-neutral-800 placeholder-neutral-400 focus:border-neutral-500 disabled:border-neutral-200 disabled:bg-neutral-50 disabled:text-neutral-500"
           ></textarea>
         </div>
       {/each}
