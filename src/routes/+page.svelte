@@ -384,7 +384,7 @@
     />
 
     <!-- Scrollable Room & Resident Content Area -->
-    <div class="flex-1 px-4 py-2 pb-24">
+    <div class="flex-1 p-2 pb-24">
       {#if selectedSort === "room"}
         {#if roomGroups.length > 0}
           {#each roomGroups as group (group.roomNumber)}

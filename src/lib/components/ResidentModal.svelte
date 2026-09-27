@@ -254,7 +254,7 @@
           </div>
           <textarea
             id={`domain-${domain.id}-input`}
-            rows="3"
+            rows="5"
             disabled={!isCurrent}
             value={content}
             oninput={isCurrent
