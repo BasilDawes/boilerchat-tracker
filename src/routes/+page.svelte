@@ -11,6 +11,8 @@
     ResidentModal,
     SettingsModal,
     ResidentCard,
+    ProcessingModal,
+    ReviewNotesModal,
     settingsStore,
     exportSettingsAsJson,
     calculateTrackerStats,
@@ -19,9 +21,14 @@
     fileToAvatarDataUrl,
     residentMatchesQuery,
     getCurrentDomainBullets,
+    getCurrentDomain,
+    getTodayDateString,
+    runVoiceExtractionPipeline,
     type Resident,
     type SortOption,
     type RoomGroup,
+    type ExtractedNoteItem,
+    type ProcessingState,
   } from "$lib"
 
   const RESIDENTS_STORAGE_KEY = "boilerchat_residents"
@@ -96,6 +103,13 @@
   let selectedResident = $state<Resident | null>(null)
   let isModalOpen = $state(false)
   let isSettingsOpen = $state(false)
+  let isReviewModalOpen = $state(false)
+  let extractedNotes = $state<ExtractedNoteItem[]>([])
+  let processingState = $state<ProcessingState>({
+    isOpen: false,
+    step: "idle",
+    stepText: "",
+  })
 
   // Tracker stats computed from unarchived residents
   let stats = $derived(
@@ -345,6 +359,114 @@
     selectedYear = ""
     residents = []
   }
+
+  async function handleAudioReady(audioFile: File) {
+    const assemblyKey = settingsStore.current.assemblyAiKey?.trim()
+    const openRouterKey = settingsStore.current.openRouterKey?.trim()
+
+    if (!assemblyKey || !openRouterKey) {
+      const missing: string[] = []
+      if (!assemblyKey) missing.push("AssemblyAI")
+      if (!openRouterKey) missing.push("OpenRouter")
+      processingState = {
+        isOpen: true,
+        step: "error",
+        stepText: "",
+        errorMessage: `Please set your ${missing.join(" and ")} API key in Settings before processing audio.`,
+      }
+      return
+    }
+
+    processingState = {
+      isOpen: true,
+      step: "uploading",
+      stepText: "Uploading audio...",
+    }
+
+    try {
+      const notes = await runVoiceExtractionPipeline({
+        audio: audioFile,
+        residents,
+        settings: settingsStore.current,
+        onStep: (step, stepText) => {
+          processingState = {
+            isOpen: true,
+            step,
+            stepText,
+          }
+        },
+      })
+
+      processingState = {
+        isOpen: false,
+        step: "idle",
+        stepText: "",
+      }
+      extractedNotes = notes
+      isReviewModalOpen = true
+    } catch (err: any) {
+      console.error("Audio processing pipeline failed:", err)
+      processingState = {
+        isOpen: true,
+        step: "error",
+        stepText: "",
+        errorMessage: err.message || "Failed to process audio recording.",
+      }
+    }
+  }
+
+  function handleSaveExtractedNotes(notesToSave: ExtractedNoteItem[]) {
+    const today = getTodayDateString()
+    let updatedList = [...residents]
+
+    for (const item of notesToSave) {
+      if (!item.residentId || item.bullets.length === 0) continue
+
+      const resIndex = updatedList.findIndex((r) => r.id === item.residentId)
+      if (resIndex === -1) continue
+
+      const resident = { ...updatedList[resIndex] }
+      const currentDomain = getCurrentDomain(settingsStore.current.domains, resident.domains, today)
+
+      if (currentDomain) {
+        const domains = resident.domains ? [...resident.domains] : []
+        const existingDomainIndex = domains.findIndex((d) => d.id === currentDomain.id)
+        const newBulletsFormatted = item.bullets
+          .map((b) => (b.startsWith("-") ? b : `- ${b}`))
+          .join("\n")
+
+        if (existingDomainIndex >= 0) {
+          const existingContent = domains[existingDomainIndex].content?.trim() || ""
+          domains[existingDomainIndex] = {
+            ...domains[existingDomainIndex],
+            content: existingContent
+              ? `${existingContent}\n${newBulletsFormatted}`
+              : newBulletsFormatted,
+          }
+        } else {
+          domains.push({
+            id: currentDomain.id,
+            title: currentDomain.title,
+            content: newBulletsFormatted,
+          })
+        }
+
+        resident.domains = domains
+        resident.lastSeen = new Date().toISOString()
+        updatedList[resIndex] = resident
+      }
+    }
+
+    residents = updatedList
+    persistResidents(residents)
+    isReviewModalOpen = false
+    extractedNotes = []
+  }
+
+  function handleDiscardExtractedNotes() {
+    isReviewModalOpen = false
+    extractedNotes = []
+  }
 </script>
 
 <svelte:head>
@@ -428,7 +550,32 @@
     </div>
 
     <!-- Floating Actions (Record, Upload) -->
-    <FloatingActions onRecord={() => {}} onUpload={() => {}} />
+    <FloatingActions
+      onAudioReady={handleAudioReady}
+      isProcessing={processingState.isOpen && processingState.step !== "error"}
+    />
+
+    <!-- Processing Modal -->
+    <ProcessingModal
+      isOpen={processingState.isOpen}
+      step={processingState.step}
+      stepText={processingState.stepText}
+      errorMessage={processingState.errorMessage}
+      onClose={() => (processingState = { isOpen: false, step: "idle", stepText: "" })}
+      onOpenSettings={() => {
+        processingState = { isOpen: false, step: "idle", stepText: "" }
+        isSettingsOpen = true
+      }}
+    />
+
+    <!-- Review Notes Modal ("Looks good?") -->
+    <ReviewNotesModal
+      isOpen={isReviewModalOpen}
+      notes={extractedNotes}
+      {residents}
+      onSave={handleSaveExtractedNotes}
+      onDiscard={handleDiscardExtractedNotes}
+    />
 
     <!-- Detail Modal -->
     <ResidentModal
