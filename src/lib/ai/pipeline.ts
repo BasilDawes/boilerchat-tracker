@@ -60,7 +60,7 @@ export async function runVoiceExtractionPipeline({
     transcript,
     residents,
     openRouterKey,
-    settings.llmModel ?? "chatgpt",
+    settings.llmModel,
     settings.bullets ?? 5,
   )
 

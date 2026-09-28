@@ -57,11 +57,11 @@ export const DEFAULT_DOMAIN_DEADLINES: Required<DomainDeadlines> = {
 export interface AppSettings {
   assemblyAiKey?: string
   openRouterKey?: string
-  llmModel?: string
-  targetPercent?: number
-  bullets?: number
+  llmModel: string
+  targetPercent: number
+  bullets: number
   domains?: DomainDeadlines
-  autoBackup?: boolean
+  autoBackup: boolean
 }
 
 export const DEFAULT_SETTINGS = {

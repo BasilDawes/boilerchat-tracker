@@ -2,18 +2,6 @@ import type { AssemblyAiUtterance, ExtractedNoteItem, ExtractionStatus, Resident
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-export function mapLlmModel(modelSetting?: string): string {
-  switch (modelSetting?.toLowerCase()) {
-    case "claude":
-      return "anthropic/claude-3.5-haiku"
-    case "gemini":
-      return "google/gemini-2.5-flash"
-    case "chatgpt":
-    default:
-      return "openai/gpt-4o-mini"
-  }
-}
-
 function formatTranscript(text: string, utterances: AssemblyAiUtterance[]): string {
   if (utterances && utterances.length > 0) {
     return utterances.map((u) => `[Speaker ${u.speaker}]: ${u.text}`).join("\n")
@@ -40,7 +28,7 @@ export async function extractNotesWithOpenRouter(
   transcript: { text: string; utterances: AssemblyAiUtterance[] },
   residents: Resident[],
   apiKey: string,
-  modelSetting: string = "chatgpt",
+  modelSetting: string,
   targetBullets: number = 5,
 ): Promise<ExtractedNoteItem[]> {
   const cleanKey = apiKey.trim()
@@ -48,7 +36,6 @@ export async function extractNotesWithOpenRouter(
     throw new Error("OpenRouter API key is missing. Please set it in Settings.")
   }
 
-  const model = mapLlmModel(modelSetting)
   const formattedTranscript = formatTranscript(transcript.text, transcript.utterances)
 
   if (!formattedTranscript) {
@@ -125,7 +112,7 @@ You MUST respond with valid JSON only in this format:
       "X-Title": "Boilerchat Tracker",
     },
     body: JSON.stringify({
-      model,
+      model: modelSetting,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },
