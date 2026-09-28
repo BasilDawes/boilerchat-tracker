@@ -22,6 +22,7 @@ export default defineConfig({
       manifest: {
         name: "RA Chats",
         description: "Track RA conversations",
+        theme_color: "#ffffff",
         icons: [
           {
             src: "pwa-64x64.png",
