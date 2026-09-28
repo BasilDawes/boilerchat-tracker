@@ -204,7 +204,7 @@
   })
 
   function persistResidents(data: Resident[], year: string = selectedYear) {
-    if (!browser || !year) return
+    if (!year) throw "Trying to import residents without a year set"
     try {
       localStorage.setItem(getResidentsStorageKey(year), JSON.stringify(data))
     } catch (e) {
@@ -334,6 +334,10 @@
   }
 
   async function handleAddResident() {
+    if (!selectedYear) {
+      alert("Please create a new year before adding residents")
+      return
+    }
     const input = document.createElement("input")
     input.type = "file"
     input.setAttribute("webkitdirectory", "")
