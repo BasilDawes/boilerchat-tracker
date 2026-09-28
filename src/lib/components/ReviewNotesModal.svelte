@@ -480,7 +480,7 @@
         onclick={onDiscard}
         class="px-4 py-2 text-xs font-semibold text-neutral-600 transition hover:text-neutral-900"
       >
-        discard
+        Discard
       </button>
       <button
         type="button"
