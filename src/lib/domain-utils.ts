@@ -47,15 +47,34 @@ export function getEffectiveDeadlines(deadlines?: DomainDeadlines): Required<Dom
 }
 
 /**
+ * Checks if a bullet string is considered blank (empty, whitespace only, or only bullet markers without text).
+ */
+export function isBlankBullet(bullet?: string | null): boolean {
+  if (!bullet) return true
+  return bullet.replace(/^[\s\-•*]+/, "").trim().length === 0
+}
+
+/**
+ * Filters out blank bullets from an array of bullets and trims valid bullet text.
+ */
+export function filterBlankBullets(bullets?: string[] | null): string[] {
+  if (!bullets) return []
+  return bullets.map((b) => b.trim()).filter((b) => !isBlankBullet(b))
+}
+
+/**
  * Counts the number of bullets in free-form text.
- * The number of bullets is counted by the number of lines starting with a dash.
+ * The number of bullets is counted by the number of non-blank lines starting with a dash, bullet, or asterisk.
  */
 export function countBullets(text?: string | null): number {
   if (!text) return 0
   return text
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.startsWith("-") || line.startsWith("•") || line.startsWith("*")).length
+    .filter((line) => {
+      const isBullet = line.startsWith("-") || line.startsWith("•") || line.startsWith("*")
+      return isBullet && !isBlankBullet(line)
+    }).length
 }
 
 /**

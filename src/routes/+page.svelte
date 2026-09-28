@@ -29,6 +29,7 @@
     getAttemptsForDomain,
     formatAttempts,
     copyToClipboard,
+    filterBlankBullets,
     type Resident,
     type SortOption,
     type RoomGroup,
@@ -487,7 +488,8 @@
     let updatedList = [...residents]
 
     for (const item of notesToSave) {
-      if (!item.residentId || item.bullets.length === 0) continue
+      const validBullets = filterBlankBullets(item.bullets)
+      if (!item.residentId || validBullets.length === 0) continue
 
       const resIndex = updatedList.findIndex((r) => r.id === item.residentId)
       if (resIndex === -1) continue
@@ -498,7 +500,7 @@
       if (currentDomain) {
         const domains = resident.domains ? [...resident.domains] : []
         const existingDomainIndex = domains.findIndex((d) => d.id === currentDomain.id)
-        const newBulletsFormatted = item.bullets
+        const newBulletsFormatted = validBullets
           .map((b) => (b.startsWith("-") ? b : `- ${b}`))
           .join("\n")
 

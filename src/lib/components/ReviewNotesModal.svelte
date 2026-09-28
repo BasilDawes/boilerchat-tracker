@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from "svelte"
   import type { ExtractedNoteItem, Resident } from "$lib/types"
+  import { filterBlankBullets } from "$lib/domain-utils"
   import ResidentPickerModal from "./ResidentPickerModal.svelte"
 
   interface Props {
@@ -90,14 +91,20 @@
   }
 
   function handleSaveClick() {
-    const unassignedCount = localNotes.filter((n) => !n.residentId).length
+    const sanitizedNotes = localNotes.map((note) => ({
+      ...note,
+      bullets: filterBlankBullets(note.bullets),
+    }))
+
+    const notesWithContent = sanitizedNotes.filter((n) => n.bullets.length > 0)
+    const unassignedCount = notesWithContent.filter((n) => !n.residentId).length
     if (unassignedCount > 0) {
       const confirmSave = confirm(
         `${unassignedCount} note${unassignedCount > 1 ? "s are" : " is"} not assigned to any resident yet. Save the assigned notes anyway?`,
       )
       if (!confirmSave) return
     }
-    onSave(localNotes)
+    onSave(sanitizedNotes)
   }
 
   function handleDialogClose() {
