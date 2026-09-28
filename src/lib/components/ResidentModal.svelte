@@ -35,23 +35,34 @@
 
   let dialogEl = $state<HTMLDialogElement | null>(null)
   let currentContent = $state("")
+  let lastOpenedResidentId = $state<string | null>(null)
+  let initialContent = $state<string | null>(null)
+  let hasEditedNotes = $state(false)
 
   $effect(() => {
     if (isOpen && resident) {
-      untrack(() => {
-        currentContent = currentDomain?.content ?? ""
-      })
+      if (lastOpenedResidentId !== resident.id) {
+        lastOpenedResidentId = resident.id
+        untrack(() => {
+          initialContent = currentDomain?.content ?? ""
+          currentContent = initialContent
+          hasEditedNotes = false
+        })
+      }
       if (dialogEl && !dialogEl.open) {
         dialogEl.showModal()
       }
     } else {
+      lastOpenedResidentId = null
+      initialContent = null
+      hasEditedNotes = false
       if (dialogEl && dialogEl.open) {
         dialogEl.close()
       }
     }
   })
 
-  function getUpdatedResident(content: string): Resident | null {
+  function getUpdatedResident(content: string, updatedLastSeen?: string): Resident | null {
     if (!resident || !currentDomain) return resident
     const domains = resident.domains ? [...resident.domains] : []
     const existingIndex = domains.findIndex((d) => d.id === currentDomain.id)
@@ -70,25 +81,37 @@
     return {
       ...resident,
       domains,
+      ...(updatedLastSeen !== undefined ? { lastSeen: updatedLastSeen } : {}),
     }
   }
 
   function handleContentChange(val: string) {
     currentContent = val
+    if (initialContent !== null && val !== initialContent) {
+      hasEditedNotes = true
+    }
+    const updatedLastSeen = hasEditedNotes ? new Date().toISOString() : undefined
     if (currentDomain) {
       onDomainChange?.(currentDomain.id, val)
     }
-    const updated = getUpdatedResident(val)
+    const updated = getUpdatedResident(val, updatedLastSeen)
     if (updated) {
       onSave?.(updated)
     }
   }
 
   function handleSaveClick() {
+    if (!hasEditedNotes && currentContent === (initialContent ?? "")) {
+      return
+    }
+    const updatedLastSeen =
+      hasEditedNotes || currentContent !== (initialContent ?? "")
+        ? new Date().toISOString()
+        : undefined
     if (currentDomain) {
       onDomainChange?.(currentDomain.id, currentContent)
     }
-    const updated = getUpdatedResident(currentContent)
+    const updated = getUpdatedResident(currentContent, updatedLastSeen)
     if (updated) {
       onSave?.(updated)
     }

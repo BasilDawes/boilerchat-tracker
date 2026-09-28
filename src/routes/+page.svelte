@@ -272,6 +272,9 @@
     if (!selectedResident) return
     const domains = selectedResident.domains ? [...selectedResident.domains] : []
     const existingIndex = domains.findIndex((d) => d.id === domainId)
+    const existingContent = existingIndex >= 0 ? (domains[existingIndex].content ?? "") : ""
+    const isEdited = value !== existingContent
+
     if (existingIndex >= 0) {
       domains[existingIndex] = {
         ...domains[existingIndex],
@@ -284,9 +287,10 @@
         content: value,
       })
     }
-    const updated = {
+    const updated: Resident = {
       ...selectedResident,
       domains,
+      ...(isEdited ? { lastSeen: new Date().toISOString() } : {}),
     }
     handleSaveResident(updated)
   }
