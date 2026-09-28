@@ -67,7 +67,7 @@ export interface AppSettings {
 export const DEFAULT_SETTINGS = {
   assemblyAiKey: "",
   openRouterKey: "",
-  llmModel: "chatgpt",
+  llmModel: "openai/gpt-6-luna",
   targetPercent: 80,
   bullets: 5,
   domains: DEFAULT_DOMAIN_DEADLINES,

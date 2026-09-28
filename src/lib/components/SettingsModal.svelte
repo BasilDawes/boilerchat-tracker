@@ -202,9 +202,9 @@
             onchange={notifyChange}
             class="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-1.5 pr-8 text-sm text-neutral-800 focus:border-neutral-500"
           >
-            <option value="chatgpt">chatgpt</option>
-            <option value="claude">claude</option>
-            <option value="gemini">gemini</option>
+            <option value="openai/gpt-6-luna">GPT 6 Luna ($0.10 / $0.50 / 1M)</option>
+            <option value="anthropic/claude-sonnet-5">Claude Sonnet 5 ($2 / $10 / 1M)</option>
+            <option value="google/gemini-3.8-flash">Gemini 3.8 Flash ($0.75 / $3.75 / 1M)</option>
           </select>
           <div
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-neutral-500"
