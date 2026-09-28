@@ -381,22 +381,26 @@
   }
 
   function handleDeleteData() {
+    if (
+      !confirm(
+        "Are you sure you want to delete? This is permanant and irreversible. Make sure you have a backup first!",
+      )
+    )
+      return
     settingsStore.reset()
-    if (browser) {
-      try {
-        const keysToRemove: string[] = []
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i)
-          if (key && key.startsWith("boilerchat_")) {
-            keysToRemove.push(key)
-          }
+    try {
+      const keysToRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith("boilerchat_")) {
+          keysToRemove.push(key)
         }
-        for (const k of keysToRemove) {
-          localStorage.removeItem(k)
-        }
-      } catch (e) {
-        console.error("Failed to clear localStorage:", e)
       }
+      for (const k of keysToRemove) {
+        localStorage.removeItem(k)
+      }
+    } catch (e) {
+      console.error("Failed to clear localStorage:", e)
     }
     academicYears = []
     selectedYear = ""
