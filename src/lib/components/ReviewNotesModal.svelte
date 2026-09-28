@@ -112,7 +112,15 @@
       onDiscard()
     }
   }
+
+  function handleBeforeUnload(event: BeforeUnloadEvent) {
+    if (isOpen) {
+      event.preventDefault()
+    }
+  }
 </script>
+
+<svelte:window onbeforeunload={handleBeforeUnload} />
 
 <dialog
   bind:this={dialogEl}
