@@ -74,7 +74,7 @@
   }
 
   function handleAddBullet(noteIndex: number) {
-    localNotes[noteIndex].bullets.push("New note")
+    localNotes[noteIndex].bullets.push("")
     localNotes = [...localNotes]
   }
 
